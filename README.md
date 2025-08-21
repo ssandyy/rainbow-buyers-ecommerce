@@ -10,4 +10,4 @@ tanstack query,
 react reduxt-> to manage state management for users login and all,
 react-redux-persist,
 ZOD -> for validation message on form submit and all 
-Mongodb
+Mongodb with mongoose
