@@ -1,14 +1,8 @@
 "use client"
+
 import { ButtonLoading } from "@/components/application/ButtonLoading"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage
-} from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
@@ -16,25 +10,33 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeClosed } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import z from "zod"
-const LoginPage = () => {
+
+
+const Signup = () => {
 
     const [showPassword, setShowPassword] = useState(false)
 
     const formSchema = zSchema.pick({
+        name: true,
         email: true,
+        password: true
     }).extend({
-        password: z.string().min(8, "please enter valid password..!")
+        confirmPassword: z.string()
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
     })
 
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            name: "",
             email: "",
-            password: ""
+            password: "",
+            confirmPassword: ""
         },
     })
 
@@ -55,19 +57,34 @@ const LoginPage = () => {
                         <Image className="max-w-[100px] mx-auto" src={Logo.src} width={100} height={100} alt="logo" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-3xl font-bold">Login Into Account</h1>
-                        <p>Login with your email and password</p>
+                        <h1 className="text-3xl font-bold">Create your account</h1>
+                        <p>Sign up with yourname, email and password</p>
                     </div>
-                    <div>
+                    <div className="mt-4">
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                                <div className="mb-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Full Name</FormLabel>
+                                                <FormControl>
+                                                    <Input type="text" placeholder="Enter your name" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                                 <div className="mb-2">
                                     <FormField
                                         control={form.control}
                                         name="email"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Username</FormLabel>
+                                                <FormLabel>Email</FormLabel>
                                                 <FormControl>
                                                     <Input type="email" placeholder="example@email.com" {...field} />
                                                 </FormControl>
@@ -77,7 +94,6 @@ const LoginPage = () => {
                                     />
                                 </div>
                                 <div className="mb-2">
-
                                     <FormField
                                         control={form.control}
                                         name="password"
@@ -101,15 +117,32 @@ const LoginPage = () => {
                                         )}
                                     />
                                 </div>
+                                <div className="mb-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="confirmPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Confirm Password</FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <Input type="password" placeholder="********" {...field} />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
-                                <ButtonLoading className="w-full cursor-pointer" type="submit" text="Login" loading={form.formState.isSubmitting} />
+                                <ButtonLoading className="w-full cursor-pointer" type="submit" text="Signup" loading={form.formState.isSubmitting} />
 
                             </form>
                             <div>
 
-                                <p>Don&apos;t have an account? <span className="text-primary cursor-pointer">
-                                    <Link href="/auth/signup">
-                                        Sign Up
+                                <p>Already have an account? <span className="text-primary cursor-pointer">
+                                    <Link href="/auth/login">
+                                        Login
                                     </Link>
                                 </span></p>
                             </div>
@@ -121,4 +154,4 @@ const LoginPage = () => {
     )
 }
 
-export default LoginPage
+export default Signup

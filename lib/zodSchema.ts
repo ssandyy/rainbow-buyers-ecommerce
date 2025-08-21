@@ -5,7 +5,8 @@ export const roleEnum = z.enum(["user", "moderator", "admin", "superadmin"]);
 export const phoneRegex = /^\+?[0-9]{1,4}?[-.\s]?\(?[0-9]{2,4}\)?[-.\s]?[0-9]{3,4}[-.\s]?[0-9]{3,4}$/;
 
 export const zSchema = z.object({
-    name: z.string().min(1, "Name is required").max(80).optional(),
+    name: z.string().min(3, "Name is required").max(80).optional(),
+
     email: z.string().email("Invalid email"),
     password: z
         .string()
