@@ -12,18 +12,19 @@ import {
 import { Input } from "@/components/ui/input"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
+import { WEBSITE_FORGOT_PASSWORD, WEBSITE_SIGNUP } from "@/routes/WebsiteRoutes"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeClosed } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import z from "zod"
+
+
 const LoginPage = () => {
 
     const [showPassword, setShowPassword] = useState(false)
-
     const formSchema = zSchema.pick({
         email: true,
     }).extend({
@@ -42,10 +43,7 @@ const LoginPage = () => {
         console.log("Submitting...", data)
         await new Promise((resolve) => setTimeout(resolve, 2000)) // fake API call
         console.log("Done!")
-
-
     }
-
 
     return (
         <div>
@@ -101,17 +99,20 @@ const LoginPage = () => {
                                         )}
                                     />
                                 </div>
-
                                 <ButtonLoading className="w-full cursor-pointer" type="submit" text="Login" loading={form.formState.isSubmitting} />
-
                             </form>
-                            <div>
-
+                            <div className="flex items-center justify-between">
                                 <p>Don&apos;t have an account? <span className="text-primary cursor-pointer">
-                                    <Link href="/auth/signup">
+                                    <Link href={WEBSITE_SIGNUP}>
                                         Sign Up
                                     </Link>
                                 </span></p>
+                                <Link href={WEBSITE_FORGOT_PASSWORD}>
+                                    <span className="text-primary cursor-pointer">
+                                        Forgot Password ?
+                                    </span>
+                                </Link>
+
                             </div>
                         </Form>
                     </div>

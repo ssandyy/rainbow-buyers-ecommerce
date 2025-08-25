@@ -6,7 +6,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
+import { WEBSITE_LOGIN } from "@/routes/WebsiteRoutes"
 import { zodResolver } from "@hookform/resolvers/zod"
+import axios from "axios"
 import { Eye, EyeClosed } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -18,6 +20,8 @@ import z from "zod"
 const Signup = () => {
 
     const [showPassword, setShowPassword] = useState(false)
+    const [sucess, setSucess] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const formSchema = zSchema.pick({
         name: true,
@@ -40,12 +44,38 @@ const Signup = () => {
         },
     })
 
-    const onSubmit = async (data: any) => {
-        console.log("Submitting...", data)
-        await new Promise((resolve) => setTimeout(resolve, 2000)) // fake API call
-        console.log("Done!")
+    // const onSubmit = async (data: any) => {
+    //     console.log("Submitting...", data)
+    //     await new Promise((resolve) => setTimeout(resolve, 1000)) // fake API call
+    //     setSucess("Account Created Sucessfully..!");
+    //     setTimeout(() => setSucess(""), 3000);
+    //     form.reset();
+    // }
 
+    const onSubmit = async (value: any) => {
+        try {
+            setLoading(true)
+            const { data: registerResponse } = await axios.post("/api/authentication/register", value);
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+            if (registerResponse.success) {
+                setLoading(false)
+                setSucess("Account Created Sucessfully..!");
+                setTimeout(() => setSucess(""), 3000);
+                window.location.href = WEBSITE_LOGIN;
+            } else {
+                setLoading(false)
+                alert(registerResponse.message)
+                form.reset();
+            }
 
+        } catch (error) {
+            console.log(error)
+        }
+        finally {
+            setLoading(false)
+            setSucess("")
+            form.reset();
+        }
     }
 
 
@@ -59,9 +89,16 @@ const Signup = () => {
                     <div className="text-center">
                         <h1 className="text-3xl font-bold">Create your account</h1>
                         <p>Sign up with yourname, email and password</p>
+
                     </div>
+
                     <div className="mt-4">
                         <Form {...form}>
+                            <div className="mt-2 text-center justify-center">
+                                <FormMessage>
+                                    {sucess && <span className="text-green-500">{sucess}</span>}
+                                </FormMessage>
+                            </div>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                                 <div className="mb-2">
                                     <FormField
@@ -134,14 +171,13 @@ const Signup = () => {
                                         )}
                                     />
                                 </div>
-
                                 <ButtonLoading className="w-full cursor-pointer" type="submit" text="Signup" loading={form.formState.isSubmitting} />
 
                             </form>
-                            <div>
+                            <div className="text-center justify-center ">
 
                                 <p>Already have an account? <span className="text-primary cursor-pointer">
-                                    <Link href="/auth/login">
+                                    <Link href={WEBSITE_LOGIN}>
                                         Login
                                     </Link>
                                 </span></p>
