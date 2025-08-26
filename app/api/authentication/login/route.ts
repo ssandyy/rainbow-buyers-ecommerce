@@ -13,7 +13,7 @@ export async function POST(request: Request) {
         const payload = await request.json();
 
         const validationSchema = z.object({
-            email: true
+            email: z.string().email()
         }).extend({
             password: z.string().min(8)
         })
@@ -31,15 +31,14 @@ export async function POST(request: Request) {
 
         const { email, password } = validatedData.data;
 
-        //get user from database
-        const user = await User.findOne({ email });
+        // get user from database WITH password selected
+        const user = await User.findOne({ email }).select('+password');
 
         if (!user) {
             return response({
                 success: false,
                 statusCode: 400,
                 message: "Invalid Credentials, please enter correct credentials..!",
-                // message: "Please check your email..!",
                 data: null
             })
         }
@@ -49,27 +48,19 @@ export async function POST(request: Request) {
             return response({
                 success: false,
                 statusCode: 400,
-                // message: "Please check your password..!",
                 message: "Invalid Credentials, please enter correct credentials..!",
                 data: null
             })
         }
 
-        // verify user email if not verified before 
+        // If email not verified, send verification link and stop here
         if (!user.isEmailVerified) {
             const secret = new TextEncoder().encode(process.env.SECRET_KEY);
-
-            // Convert userId to string to avoid buffer issues
-            const token = await new SignJWT({
-                userId: user._id.toString() // Convert to string here!
-            })
+            const token = await new SignJWT({ userId: user._id.toString() })
                 .setIssuedAt()
                 .setProtectedHeader({ alg: "HS256" })
-                .setExpirationTime("1hr")
+                .setExpirationTime("1h")
                 .sign(secret);
-
-            console.log("✅ User registered:", user._id.toString());
-            console.log("🔑 Token generated for verification");
 
             await sendMail({
                 subject: "Email Verification Request from Rainbow Buyer's",
@@ -85,34 +76,19 @@ export async function POST(request: Request) {
             })
         }
 
-        return response({
-            success: true,
-            statusCode: 200,
-            message: "Login successfully",
-            data: null
-        })
-
-
-        // first delete any old  OPT
-        await OTPModel.deleteMany({ email }); // delete all previous otps of user
-
-
-        // generate OTP in helpper function 
+        // Verified user → send OTP for secure login
+        await OTPModel.deleteMany({ email });
         const otp = generateOTP();
-
-        // storing otp in databse 
-        const newOtpData = new OTPModel({ email, otp })
+        const newOtpData = new OTPModel({ email, otp });
         await newOtpData.save();
 
         const otpEmailStatus = await sendMail({
             subject: "OTP from Rainbow Buyer's",
             receiver: email as string,
             body: `Your OTP is ${otp}`
-        })
+        });
 
-        // await sendMail('your login verification ', email, otpEmail(otp));
-
-        if (!otpEmailStatus) {
+        if (!otpEmailStatus?.success) {
             return response({
                 success: false,
                 statusCode: 400,
@@ -120,17 +96,13 @@ export async function POST(request: Request) {
                 data: null
             })
         }
+
         return response({
             success: true,
             statusCode: 200,
             message: "OTP sent successfully",
             data: null
         })
-
-
-
-
-
     } catch (e: any) {
         return catchError(e);
     }

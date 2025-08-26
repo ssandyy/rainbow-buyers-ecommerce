@@ -31,7 +31,7 @@ const VerifyEmailPage = ({ params }: { params: Promise<{ token: string }> }) => 
                         setMessage("Your email is already verified ✅");
                     } else {
                         setStatus("success");
-                        setMessage("Email Verification Successful ✅");
+                        setMessage("Email Verification Successfull..! ✅");
                     }
                 } else {
                     setStatus("failed");

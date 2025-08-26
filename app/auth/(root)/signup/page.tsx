@@ -21,7 +21,6 @@ import z from "zod"
 const Signup = () => {
 
     const [showPassword, setShowPassword] = useState(false)
-    const [sucess, setSucess] = useState("")
     const [loading, setLoading] = useState(false)
 
     const formSchema = zSchema.pick({
@@ -45,39 +44,28 @@ const Signup = () => {
         },
     })
 
-    // const onSubmit = async (data: any) => {
-    //     console.log("Submitting...", data)
-    //     await new Promise((resolve) => setTimeout(resolve, 1000)) // fake API call
-    //     setSucess("Account Created Sucessfully..!");
-    //     setTimeout(() => setSucess(""), 3000);
-    //     form.reset();
-    // }
-
     const onSubmit = async (value: any) => {
         try {
             setLoading(true)
             const { data: registerResponse } = await axios.post("/api/authentication/register", value);
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+
             if (registerResponse.success) {
+                // Inform user to verify email
+                showToast({ type: "success", message: registerResponse.message || "Registration successful. Please verify your email." })
                 setLoading(false)
-                setSucess("Account Created Sucessfully..!");
-                setTimeout(() => setSucess(""), 3000);
-                window.location.href = WEBSITE_LOGIN;
+                setTimeout(() => {
+                    window.location.href = WEBSITE_LOGIN;
+                }, 1500)
             } else {
                 setLoading(false)
-                alert(registerResponse.message)
-                form.reset();
-                showToast({ type: "success", message: registerResponse.message })
+                showToast({ type: "warning", message: registerResponse.message || "Registration failed" })
             }
 
-        } catch (error) {
-            showToast({ type: "error", message: "Something went wrong, maybe internal server error..!" })
-            console.log(error)
-        }
-        finally {
+        } catch (error: any) {
             setLoading(false)
-            setSucess("")
-            form.reset();
+            const msg = error?.response?.data?.message || "Something went wrong, maybe internal server error..!";
+            showToast({ type: "error", message: msg })
+            console.log(error)
         }
     }
 
@@ -92,14 +80,13 @@ const Signup = () => {
                     <div className="text-center">
                         <h1 className="text-3xl font-bold">Create your account</h1>
                         <p>Sign up with yourname, email and password</p>
-
                     </div>
 
                     <div className="mt-4">
                         <Form {...form}>
                             <div className="mt-2 text-center justify-center">
                                 <FormMessage>
-                                    {sucess && <span className="text-green-500">{sucess}</span>}
+                                    {form.formState.errors.confirmPassword && form.formState.errors.confirmPassword.message}
                                 </FormMessage>
                             </div>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -174,7 +161,7 @@ const Signup = () => {
                                         )}
                                     />
                                 </div>
-                                <ButtonLoading className="w-full cursor-pointer" type="submit" text="Signup" loading={form.formState.isSubmitting} />
+                                <ButtonLoading className="w-full cursor-pointer" type="submit" text="Signup" loading={form.formState.isSubmitting || loading} />
 
                             </form>
                             <div className="text-center justify-center ">

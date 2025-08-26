@@ -55,7 +55,7 @@ export async function POST(req: Request) {
             body: EmailVerificationLink({ link: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/auth/verify-email/${token}` })
         });
 
-        return response({ success: true, statusCode: 201, message: "Registration successfull, Welcome to Rainbow Family..!", data: user });
+        return response({ success: true, statusCode: 201, message: "Please check your email and verify to continue..!", data: user });
 
     } catch (err) {
         console.error("❌ Registration error:", err);
