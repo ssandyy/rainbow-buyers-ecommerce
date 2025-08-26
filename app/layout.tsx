@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Assistant } from "next/font/google";
+import { ToastContainer } from "react-toastify";
 import "./globals.css";
 
 const assistant = Assistant({
@@ -40,6 +41,7 @@ export default function RootLayout({
         {/* <body
         className={`${assistant.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       > */}
+        <ToastContainer />
         {children}
       </body>
     </html>

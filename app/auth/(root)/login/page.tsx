@@ -10,10 +10,12 @@ import {
     FormMessage
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { showToast } from "@/lib/showToast"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
-import { WEBSITE_FORGOT_PASSWORD, WEBSITE_SIGNUP } from "@/routes/WebsiteRoutes"
+import { WEBSITE_FORGOT_PASSWORD, WEBSITE_HOME, WEBSITE_SIGNUP } from "@/routes/WebsiteRoutes"
 import { zodResolver } from "@hookform/resolvers/zod"
+import axios from "axios"
 import { Eye, EyeClosed } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -25,6 +27,9 @@ import z from "zod"
 const LoginPage = () => {
 
     const [showPassword, setShowPassword] = useState(false)
+    const [loading, setLoading] = useState(false)
+
+
     const formSchema = zSchema.pick({
         email: true,
     }).extend({
@@ -39,10 +44,29 @@ const LoginPage = () => {
         },
     })
 
-    const onSubmit = async (data: any) => {
-        console.log("Submitting...", data)
-        await new Promise((resolve) => setTimeout(resolve, 2000)) // fake API call
-        console.log("Done!")
+    const onSubmit = async (value: any) => {
+        try {
+            setLoading(true)
+            const { data: loginResponse } = await axios.post("/api/authentication/login", value);
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+            if (loginResponse.success) {
+                setLoading(false);
+                window.location.href = WEBSITE_HOME;
+            } else {
+                setLoading(false)
+                alert(loginResponse.message)
+                form.reset();
+                showToast({ type: "success", message: loginResponse.message })
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+        finally {
+            setLoading(false)
+            form.reset();
+        }
+
     }
 
     return (

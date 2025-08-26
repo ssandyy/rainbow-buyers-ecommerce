@@ -1,11 +1,11 @@
-import { catchError, response } from "@/lib/apiHelperFunctions";
-import connectToDatabase from "@/lib/dbconnection";
-import z from "zod";
-import User from "@/models/Users.model";
-import bcrypt from "bcryptjs";
 import { EmailVerificationLink } from "@/app/email/emailVarification";
+import { catchError, generateOTP, response } from "@/lib/apiHelperFunctions";
+import connectToDatabase from "@/lib/dbconnection";
 import { sendMail } from "@/lib/senMail";
+import OTPModel from "@/models/Otp.model";
+import User from "@/models/Users.model";
 import { SignJWT } from "jose";
+import z from "zod";
 
 export async function POST(request: Request) {
     try {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
         //get user from database
         const user = await User.findOne({ email });
 
-        if(!user){
+        if (!user) {
             return response({
                 success: false,
                 statusCode: 400,
@@ -45,8 +45,7 @@ export async function POST(request: Request) {
         }
 
         const isPasswordCorrect = await user.comparePassword(password);
-
-        if(!isPasswordCorrect){
+        if (!isPasswordCorrect) {
             return response({
                 success: false,
                 statusCode: 400,
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
         }
 
         // verify user email if not verified before 
-        if(!user.isEmailVerified){
+        if (!user.isEmailVerified) {
             const secret = new TextEncoder().encode(process.env.SECRET_KEY);
 
             // Convert userId to string to avoid buffer issues
@@ -68,10 +67,10 @@ export async function POST(request: Request) {
                 .setProtectedHeader({ alg: "HS256" })
                 .setExpirationTime("1hr")
                 .sign(secret);
-    
+
             console.log("✅ User registered:", user._id.toString());
             console.log("🔑 Token generated for verification");
-    
+
             await sendMail({
                 subject: "Email Verification Request from Rainbow Buyer's",
                 receiver: email as string,
@@ -92,6 +91,45 @@ export async function POST(request: Request) {
             message: "Login successfully",
             data: null
         })
+
+
+        // first delete any old  OPT
+        await OTPModel.deleteMany({ email }); // delete all previous otps of user
+
+
+        // generate OTP in helpper function 
+        const otp = generateOTP();
+
+        // storing otp in databse 
+        const newOtpData = new OTPModel({ email, otp })
+        await newOtpData.save();
+
+        const otpEmailStatus = await sendMail({
+            subject: "OTP from Rainbow Buyer's",
+            receiver: email as string,
+            body: `Your OTP is ${otp}`
+        })
+
+        // await sendMail('your login verification ', email, otpEmail(otp));
+
+        if (!otpEmailStatus) {
+            return response({
+                success: false,
+                statusCode: 400,
+                message: "Something went wrong. Please try again later.",
+                data: null
+            })
+        }
+        return response({
+            success: true,
+            statusCode: 200,
+            message: "OTP sent successfully",
+            data: null
+        })
+
+
+
+
 
     } catch (e: any) {
         return catchError(e);

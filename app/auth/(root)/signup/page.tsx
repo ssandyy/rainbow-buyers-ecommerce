@@ -4,6 +4,7 @@ import { ButtonLoading } from "@/components/application/ButtonLoading"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { showToast } from "@/lib/showToast"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
 import { WEBSITE_LOGIN } from "@/routes/WebsiteRoutes"
@@ -66,9 +67,11 @@ const Signup = () => {
                 setLoading(false)
                 alert(registerResponse.message)
                 form.reset();
+                showToast({ type: "success", message: registerResponse.message })
             }
 
         } catch (error) {
+            showToast({ type: "error", message: "Something went wrong, maybe internal server error..!" })
             console.log(error)
         }
         finally {
