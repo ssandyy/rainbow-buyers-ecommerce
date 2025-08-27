@@ -15,6 +15,7 @@ export async function POST(request: Request) {
         });
 
         const validatedData = validationSchema.safeParse(payload);
+
         if (!validatedData.success) {
             return response({
                 success: false,
@@ -53,15 +54,19 @@ export async function POST(request: Request) {
             });
         }
 
-        // Consume OTP
+
         await OTPModel.deleteOne({ _id: otpRecord._id });
 
-        // Success — in a real app, issue a session/JWT cookie here
         return response({
             success: true,
             statusCode: 200,
             message: "OTP verified. Login successful.",
-            data: null
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
         });
     } catch (e: any) {
         return catchError(e);

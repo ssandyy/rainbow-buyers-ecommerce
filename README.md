@@ -16,5 +16,10 @@ NodeMailer ->  to send mail to user --> npm i nodemailer
 bcryptjs -> to bcrypt password.
 axios -> mail service..!
 
+redux-tool kit:  npm install @reduxjs/toolkit react-redux
+redux-persist : npm install redux-persist
+
+
+
 generate secrect key = openssl rand -base64 32
 

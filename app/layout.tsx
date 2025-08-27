@@ -1,3 +1,4 @@
+import GlobalProvider from "@/components/application/GlobalProvider";
 import type { Metadata } from "next";
 import { Assistant } from "next/font/google";
 import { ToastContainer } from "react-toastify";
@@ -41,8 +42,11 @@ export default function RootLayout({
         {/* <body
         className={`${assistant.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       > */}
-        <ToastContainer />
-        {children}
+        <GlobalProvider>
+          <ToastContainer />
+          {children}
+        </GlobalProvider>
+
       </body>
     </html>
   );
