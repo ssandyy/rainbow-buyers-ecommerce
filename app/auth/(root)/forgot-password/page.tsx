@@ -30,6 +30,8 @@ const ForgotPasswordpage = () => {
         console.log("Submitting...", data)
         await new Promise((resolve) => setTimeout(resolve, 2000)) // fake API call
         setSuccess("Check your inbox for further instructions");
+
+
     }
 
 
