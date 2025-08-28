@@ -32,7 +32,15 @@ export const adminSidebarMenu = [
         icon: Tag,
         subMenu: [
             { title: "Add Category", url: "#" },
-            { title: "All Category", url: "#" }
+            { title: "All Category", url: "#" },
+            {
+                title: "Sub Category",
+                url: "#",
+                subMenu: [
+                    { title: "Add Sub Category", url: "#" },
+                    { title: "All Sub Category", url: "#" }
+                ]
+            }
         ]
     },
     {

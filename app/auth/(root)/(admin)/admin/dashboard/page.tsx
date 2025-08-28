@@ -1,7 +1,9 @@
 
 const AdminDashboard = () => {
     return (
-        <div>AdminDashboard</div>
+        <div className="flex items-center justify-center h-full w-full">
+            <h2 className="text-3xl">AdminDashboard</h2>
+        </div>
     )
 }
 
