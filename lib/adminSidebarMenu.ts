@@ -10,10 +10,13 @@ import {
     Users
 } from "lucide-react"
 
+import { ADMIN_DASHBOARD, ADMIN_MEDIA } from "@/routes/AdminPanelRoutes"
+
+
 export const adminSidebarMenu = [
     {
         title: "Dashboard",
-        url: "#",
+        url: ADMIN_DASHBOARD,
         icon: LayoutDashboard,
     },
     {
@@ -78,11 +81,11 @@ export const adminSidebarMenu = [
     },
     {
         title: "Media",
-        url: "#",
+        url: ADMIN_MEDIA,
         icon: Image,
-        subMenu: [
-            { title: "Add Media", url: "#" },
-            { title: "All Media", url: "#" }
-        ]
+        // subMenu: [
+        //     { title: "Add Media", url: "#" },
+        //     { title: "All Media", url: ADMIN_MEDIA }
+        // ]
     }
 ]

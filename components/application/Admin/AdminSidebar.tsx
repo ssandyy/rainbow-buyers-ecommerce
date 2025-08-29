@@ -1,5 +1,6 @@
 "use client"
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -23,6 +24,8 @@ import { ChevronDown, ChevronUp, PanelLeftClose, PanelLeftOpen, User2 } from "lu
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSelector } from "react-redux"
+import AdminSignout from "./AdminSignout"
 
 // Define proper types
 interface MenuItem {
@@ -88,11 +91,15 @@ const RenderMenu = ({ items, isSub = false }: { items: MenuItem[]; isSub?: boole
 
 const AdminSidebar = () => {
     const { open, setOpen } = useSidebar()
+    // const toggleSidebar = useSidebar()
+
+    const auth = useSelector((store: any) => store.auth)
+
 
     return (
         <Sidebar collapsible="icon" className="border-r  bg-background z-30 relative">
             {/* Toggle Button on Border - Higher z-index */}
-            <div className="absolute -right-4 top-12 z-50">
+            <div className="hidden md:block absolute -right-4 top-12 z-50">
                 <Button
                     onClick={() => setOpen(!open)}
                     variant="ghost"
@@ -124,8 +131,21 @@ const AdminSidebar = () => {
                             Admin Panel
                         </span>
                     </div>
+                    {/* <div className="md:hidden absolute -right-4 cursor-pointer">
+                        <Button onClick={() => setOpen(!open)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 rounded-full border-2 border-purple-700 bg-background shadow-lg hover:bg-purple-500 hover:text-white transition-colors"
+                        >
+                            <PanelLeftClose className="h-3 w-3" />
+                        </Button>
+                    </div> */}
+
                 </div>
+
+
             </SidebarHeader>
+
 
             {/* Menu */}
             <SidebarContent className="px-2 py-4">
@@ -141,8 +161,13 @@ const AdminSidebar = () => {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton className="w-full">
-                                    <User2 className="w-4 h-4" />
-                                    <span className="group-data-[collapsible=icon]:hidden">Username</span>
+                                    <Avatar>
+                                        <AvatarImage src="https://github.com/shadcn.png" />
+                                        <AvatarFallback>
+                                            <User2 className="w-4 h-4" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="group-data-[collapsible=icon]:hidden">{auth?.user.name}</span>
                                     <ChevronUp className="ml-auto w-4 h-4 group-data-[collapsible=icon]:hidden" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
@@ -156,9 +181,7 @@ const AdminSidebar = () => {
                                 <DropdownMenuItem>
                                     <span>Settings</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <span>Sign out</span>
-                                </DropdownMenuItem>
+                                <AdminSignout />
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </SidebarMenuItem>

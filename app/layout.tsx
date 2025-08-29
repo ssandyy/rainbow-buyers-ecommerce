@@ -42,12 +42,12 @@ export default function RootLayout({
         {/* <body
         className={`${assistant.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       > */}
+
         <GlobalProvider>
           <ToastContainer />
           {children}
         </GlobalProvider>
-
       </body>
-    </html>
+    </html >
   );
 }
