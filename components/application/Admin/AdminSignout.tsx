@@ -33,7 +33,7 @@ const AdminSignout = () => {
     }
 
     return (
-        <DropdownMenuItem onClick={handleSignout} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleSignout} className="cursor-pointer ml-0.5">
             <span>Sign out</span>
         </DropdownMenuItem>
     )

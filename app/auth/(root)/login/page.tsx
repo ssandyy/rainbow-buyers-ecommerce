@@ -14,6 +14,7 @@ import { response } from "@/lib/apiHelperFunctions"
 import { showToast } from "@/lib/showToast"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
+import { ADMIN_DASHBOARD } from "@/routes/AdminPanelRoutes"
 import { WEBSITE_FORGOT_PASSWORD, WEBSITE_HOME, WEBSITE_SIGNUP } from "@/routes/WebsiteRoutes"
 import { login } from "@/store/reducer/authReducer"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -105,7 +106,7 @@ const LoginPage = () => {
             if (data.success) {
                 showToast({ type: "success", message: data.message || "OTP verified. Logging you in..." })
                 dispatch(login(data.data))
-                router.push(WEBSITE_HOME)
+                router.push(ADMIN_DASHBOARD)
             } else {
                 showToast({ type: "error", message: data.message || "Invalid or expired OTP" })
             }

@@ -1,2 +1,2 @@
-export const ADMIN_DASHBOARD = 'dashboard'
-export const ADMIN_MEDIA = 'media'
+export const ADMIN_DASHBOARD = '/auth/admin/dashboard'
+export const ADMIN_MEDIA = '/auth/admin/media'

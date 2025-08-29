@@ -3,6 +3,7 @@ import AdminFooter from "@/components/application/Admin/AdminFooter"
 import AdminSidebar from "@/components/application/Admin/AdminSidebar"
 import ThemeSwitcher from "@/components/application/Admin/ThemeSwitcher"
 import AdminTopbar from "@/components/application/Admin/Topbar"
+import BreadCrumb from "@/components/application/Breadcrumb"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
@@ -22,6 +23,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     <div className="flex flex-col flex-1">
                         {/* Topbar - Only spans content area */}
                         <AdminTopbar />
+                        <BreadCrumb />
 
                         {/* Content */}
                         <main className="flex-1 p-6">

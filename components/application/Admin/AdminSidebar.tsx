@@ -104,7 +104,7 @@ const AdminSidebar = () => {
                     onClick={() => setOpen(!open)}
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 rounded-full border-2 border-purple-700 bg-background shadow-lg hover:bg-purple-500 hover:text-white transition-colors"
+                    className="h-7 w-7 rounded-full border-2 border-purple-700 bg-background shadow-lg hover:bg-purple-500 hover:text-white transition-colors "
                 >
                     {open ? (
                         <PanelLeftClose className="h-3 w-3" />
@@ -148,7 +148,7 @@ const AdminSidebar = () => {
 
 
             {/* Menu */}
-            <SidebarContent className="px-2 py-4">
+            <SidebarContent className="py-6">
                 <SidebarGroup>
                     <RenderMenu items={adminSidebarMenu} />
                 </SidebarGroup>
