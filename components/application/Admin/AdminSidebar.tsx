@@ -52,9 +52,9 @@ const RenderMenu = ({ items, isSub = false }: { items: MenuItem[]; isSub?: boole
                         {item.subMenu ? (
                             <Collapsible defaultOpen={item.subMenu.some(subItem => subItem.url === pathname)}>
                                 <CollapsibleTrigger asChild>
-                                    <ButtonComponent className="w-full justify-between">
+                                    <ButtonComponent className="w-full justify-between group-data-[collapsible=icon]:justify-center">
                                         <div className="flex items-center">
-                                            {item.icon && <item.icon className="w-4 h-4 mr-3 shrink-0" />}
+                                            {item.icon && <item.icon className="w-4 h-4 mr-3 shrink-0 group-data-[collapsible=icon]:mr-0" />}
                                             <span className="truncate group-data-[collapsible=icon]:hidden">{item.title}</span>
                                         </div>
                                         <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 data-[state=open]:rotate-180 group-data-[collapsible=icon]:hidden" />
@@ -70,14 +70,14 @@ const RenderMenu = ({ items, isSub = false }: { items: MenuItem[]; isSub?: boole
                         ) : (
                             <ButtonComponent
                                 asChild
-                                className={`w-full justify-start ${isActive
+                                className={`w-full justify-start group-data-[collapsible=icon]:justify-center ${isActive
                                     ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                                     : 'hover:bg-accent hover:text-accent-foreground'
                                     }`}
                                 tooltip={item.title}
                             >
                                 <Link href={item.url || '#'}>
-                                    {item.icon && <item.icon className="w-4 h-4 mr-3 shrink-0" />}
+                                    {item.icon && <item.icon className="w-4 h-4 mr-3 shrink-0 group-data-[collapsible=icon]:mr-0" />}
                                     <span className="truncate group-data-[collapsible=icon]:hidden">{item.title}</span>
                                 </Link>
                             </ButtonComponent>
@@ -160,8 +160,8 @@ const AdminSidebar = () => {
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton className="w-full">
-                                    <Avatar>
+                                <SidebarMenuButton className="w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
+                                    <Avatar className="group-data-[collapsible=icon]:size-7">
                                         <AvatarImage src="https://github.com/shadcn.png" />
                                         <AvatarFallback>
                                             <User2 className="w-4 h-4" />

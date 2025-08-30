@@ -34,16 +34,16 @@ export const catchError = ({
 
     // Handle known cases
     if (error.code === 11000) {
-        // Mongo duplicate key
+        // duplicate key
         const keys = Object.keys(error.keyPattern || {}).join(", ");
         statusCode = 400;
         message = `Duplicate field(s): ${keys}, must be unique.`;
     } else if (error.name === "ValidationError") {
-        // Mongoose validation error
+        // validation error
         statusCode = 400;
         message = error.message;
     } else if (error.statusCode) {
-        // custom thrown error
+
         statusCode = error.statusCode;
         message = error.message || message;
     }
