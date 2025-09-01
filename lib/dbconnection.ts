@@ -1,9 +1,10 @@
 import mongoose, { Connection } from "mongoose";
 
-const MONGODB_URL = process.env.MONGODB_URI as string;
+// Support both DATABASE_URL and MONGODB_URI for compatibility
+const MONGODB_URL = process.env.DATABASE_URL || process.env.MONGODB_URI as string;
 
 if (!MONGODB_URL) {
-    throw new Error("Missing MONGODB_URL environment variable");
+    throw new Error("Missing DATABASE_URL or MONGODB_URI environment variable");
 }
 
 declare global {

@@ -9,7 +9,7 @@ const AdminTopbar = () => {
 
     const { theme, setTheme } = useTheme()
     const { toggleSidebar } = useSidebar()
-    const auth = useSelector((store: any) => store.auth)
+    const auth = useSelector((store: any) => store.authStore.auth)
 
     return (
         <div className="flex items-center justify-between h-16 w-full bg-gray-300 dark:bg-gray-800 dark:text-white border-b px-6 shrink-0">
@@ -35,7 +35,7 @@ const AdminTopbar = () => {
                 </div>
 
                 <div>
-                    <span className="text-sm text-gray-600 dark:text-white ">Welcome, {auth?.user.name}</span>
+                    <span className="text-sm text-gray-600 dark:text-white ">Welcome, {auth?.name}</span>
                 </div>
 
 

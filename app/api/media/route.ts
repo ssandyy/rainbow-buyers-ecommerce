@@ -36,6 +36,52 @@ export async function GET(req: NextRequest) {
     }
 }
 
+export async function POST(req: NextRequest) {
+    try {
+        await connectToDatabase()
+        const body = await req.json()
+        
+        console.log("Media POST request body:", body)
+        
+        const { asset_id, public_id, secure_url, thumbnail_url, title, alt } = body
+        
+        if (!asset_id || !public_id || !secure_url) {
+            console.error("Missing required fields:", { asset_id, public_id, secure_url })
+            return new Response(JSON.stringify({ 
+                success: false, 
+                message: "Missing required fields: asset_id, public_id, and secure_url are required" 
+            }), { status: 400 })
+        }
+
+        const mediaData = {
+            asset_id,
+            public_id,
+            path: secure_url, // Map secure_url to path field
+            thumbnail_url: thumbnail_url || secure_url,
+            title: title || public_id,
+            alt: alt || title || public_id
+        }
+
+        console.log("Creating media with data:", mediaData)
+
+        const media = await MediaModel.create(mediaData)
+        console.log("Media created successfully:", media._id)
+
+        return new Response(JSON.stringify({ 
+            success: true, 
+            data: media,
+            message: "Media uploaded successfully"
+        }), { status: 201 })
+    } catch (error: any) {
+        console.error("Failed to create media:", error)
+        return new Response(JSON.stringify({ 
+            success: false, 
+            message: "Failed to create media", 
+            error: error?.message || "Unknown error" 
+        }), { status: 500 })
+    }
+}
+
 export async function PATCH(req: NextRequest) {
     try {
         await connectToDatabase()

@@ -1,0 +1,16 @@
+# Database Configuration
+DATABASE_URL="your_mongodb_connection_string"
+MONGODB_URI="your_mongodb_connection_string"
+MONGODB_URL="your_mongodb_connection_string"
+
+# Cloudinary Configuration
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your_cloudinary_cloud_name"
+NEXT_PUBLIC_CLOUDINARY_API_KEY="your_cloudinary_api_key"
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="your_upload_preset_name"
+CLOUDINARY_API_SECRET="your_cloudinary_api_secret"
+
+# JWT Secret
+SECRET_KEY="your_jwt_secret_key"
+
+# Environment
+NODE_ENV="development"

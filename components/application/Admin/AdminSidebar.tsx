@@ -93,7 +93,7 @@ const AdminSidebar = () => {
     const { open, setOpen } = useSidebar()
     // const toggleSidebar = useSidebar()
 
-    const auth = useSelector((store: any) => store.auth)
+    const auth = useSelector((store: any) => store.authStore.auth)
 
 
     return (
@@ -167,7 +167,7 @@ const AdminSidebar = () => {
                                             <User2 className="w-4 h-4" />
                                         </AvatarFallback>
                                     </Avatar>
-                                    <span className="group-data-[collapsible=icon]:hidden">{auth?.user.name}</span>
+                                    <span className="group-data-[collapsible=icon]:hidden">{auth?.name}</span>
                                     <ChevronUp className="ml-auto w-4 h-4 group-data-[collapsible=icon]:hidden" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>

@@ -5,7 +5,9 @@ import axios from "axios"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { showToast } from "@/lib/showToast"
+import { Edit2, Trash2, Save, X, Copy, Eye, Download } from "lucide-react"
 
 type MediaItem = {
     _id: string
@@ -27,6 +29,8 @@ const MediaGallery = () => {
     const [page, setPage] = useState(1)
     const [limit] = useState(24)
     const [total, setTotal] = useState(0)
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editForm, setEditForm] = useState({ title: "", alt: "" })
 
     const pages = Math.max(1, Math.ceil(total / limit))
 
@@ -79,23 +83,75 @@ const MediaGallery = () => {
 
     const softDelete = async () => {
         if (selected.size === 0) return
-        await axios.patch("/api/media", { ids: Array.from(selected), action: "soft-delete" })
-        setSelected(new Set())
-        fetchItems()
+        try {
+            await axios.patch("/api/media", { ids: Array.from(selected), action: "soft-delete" })
+            setSelected(new Set())
+            fetchItems()
+            showToast({ type: "success", message: `${selected.size} item(s) moved to trash` })
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to delete items" })
+        }
     }
 
     const restore = async () => {
         if (selected.size === 0) return
-        await axios.patch("/api/media", { ids: Array.from(selected), action: "restore" })
-        setSelected(new Set())
-        fetchItems()
+        try {
+            await axios.patch("/api/media", { ids: Array.from(selected), action: "restore" })
+            setSelected(new Set())
+            fetchItems()
+            showToast({ type: "success", message: `${selected.size} item(s) restored` })
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to restore items" })
+        }
     }
 
     const permanentDelete = async () => {
         if (selected.size === 0) return
-        await axios.delete("/api/media", { data: { ids: Array.from(selected) } })
-        setSelected(new Set())
-        fetchItems()
+        if (!confirm(`Are you sure you want to permanently delete ${selected.size} item(s)? This action cannot be undone.`)) return
+        
+        try {
+            await axios.delete("/api/media", { data: { ids: Array.from(selected) } })
+            setSelected(new Set())
+            fetchItems()
+            showToast({ type: "success", message: `${selected.size} item(s) permanently deleted` })
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to delete items" })
+        }
+    }
+
+    const startEditing = (item: MediaItem) => {
+        setEditingId(item._id)
+        setEditForm({
+            title: item.title || "",
+            alt: item.alt || ""
+        })
+    }
+
+    const cancelEditing = () => {
+        setEditingId(null)
+        setEditForm({ title: "", alt: "" })
+    }
+
+    const saveEdit = async (item: MediaItem) => {
+        try {
+            const response = await axios.patch(`/api/media/${item._id}`, {
+                title: editForm.title,
+                alt: editForm.alt
+            })
+            
+            if (response.data.success) {
+                setItems(prev => prev.map(i => 
+                    i._id === item._id 
+                        ? { ...i, title: editForm.title, alt: editForm.alt }
+                        : i
+                ))
+                setEditingId(null)
+                setEditForm({ title: "", alt: "" })
+                showToast({ type: "success", message: "Media updated successfully" })
+            }
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to update media" })
+        }
     }
 
     const [preview, setPreview] = useState<MediaItem | null>(null)
@@ -103,9 +159,27 @@ const MediaGallery = () => {
     const copyUrl = async (url: string) => {
         try {
             await navigator.clipboard.writeText(url)
-            showToast({ type: "success", message: "URL copied" })
+            showToast({ type: "success", message: "URL copied to clipboard" })
         } catch {
-            showToast({ type: "error", message: "Failed to copy" })
+            showToast({ type: "error", message: "Failed to copy URL" })
+        }
+    }
+
+    const downloadImage = async (url: string, filename: string) => {
+        try {
+            const response = await fetch(url)
+            const blob = await response.blob()
+            const downloadUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = downloadUrl
+            link.download = filename
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(downloadUrl)
+            showToast({ type: "success", message: "Download started" })
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to download image" })
         }
     }
 
@@ -120,7 +194,7 @@ const MediaGallery = () => {
                 <div className="flex items-center gap-2">
                     <Button variant="secondary" onClick={selectNone} disabled={selected.size === 0}>Select None</Button>
                     <Button variant="secondary" onClick={invertSelection} disabled={items.length === 0}>Invert</Button>
-                    <Button variant="destructive" onClick={softDelete} disabled={selected.size === 0}>Temp Delete</Button>
+                    <Button variant="destructive" onClick={softDelete} disabled={selected.size === 0}>Move to Trash</Button>
                     <Button onClick={restore} disabled={selected.size === 0}>Restore</Button>
                     <Button variant="destructive" onClick={permanentDelete} disabled={selected.size === 0}>Delete Permanently</Button>
                 </div>
@@ -143,15 +217,59 @@ const MediaGallery = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {items.map((item) => {
                     const isChecked = selected.has(item._id)
+                    const isEditing = editingId === item._id
+                    
                     return (
                         <Card key={item._id} className={`relative overflow-hidden ${item.deleted ? "opacity-60" : ""}`}>
-                            <div className="absolute left-2 top-2 z-10 flex items-center gap-2">
+                            <div className="absolute left-2 top-2 z-10 flex items-center gap-1">
                                 <input type="checkbox" checked={isChecked} onChange={() => toggleOne(item._id)} />
-                                <Button size="sm" variant="secondary" onClick={() => setPreview(item)}>Preview</Button>
-                                <Button size="sm" onClick={() => copyUrl(item.path)}>Copy URL</Button>
+                                <Button size="sm" variant="secondary" onClick={() => setPreview(item)}>
+                                    <Eye className="w-3 h-3" />
+                                </Button>
+                                <Button size="sm" variant="secondary" onClick={() => startEditing(item)}>
+                                    <Edit2 className="w-3 h-3" />
+                                </Button>
                             </div>
+                            
+                            <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
+                                <Button size="sm" variant="secondary" onClick={() => copyUrl(item.path)}>
+                                    <Copy className="w-3 h-3" />
+                                </Button>
+                                <Button size="sm" variant="secondary" onClick={() => downloadImage(item.path, item.title || item.public_id)}>
+                                    <Download className="w-3 h-3" />
+                                </Button>
+                            </div>
+                            
                             <Image src={item.thumbnail_url || item.path} alt={item.alt || item.title || "media"} width={300} height={200} className="w-full h-40 object-cover" />
-                            <div className="p-2 text-xs truncate" title={item.title || item.public_id}>{item.title || item.public_id}</div>
+                            
+                            {isEditing ? (
+                                <div className="p-2 space-y-2">
+                                    <Input
+                                        value={editForm.title}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                                        placeholder="Title"
+                                        className="text-xs h-7"
+                                    />
+                                    <Input
+                                        value={editForm.alt}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, alt: e.target.value }))}
+                                        placeholder="Alt text"
+                                        className="text-xs h-7"
+                                    />
+                                    <div className="flex gap-1">
+                                        <Button size="sm" onClick={() => saveEdit(item)} className="flex-1 h-7">
+                                            <Save className="w-3 h-3" />
+                                        </Button>
+                                        <Button size="sm" variant="outline" onClick={cancelEditing} className="h-7">
+                                            <X className="w-3 h-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-2 text-xs truncate" title={item.title || item.public_id}>
+                                    {item.title || item.public_id}
+                                </div>
+                            )}
                         </Card>
                     )
                 })}
@@ -172,6 +290,11 @@ const MediaGallery = () => {
                         </div>
                         <div className="relative w-[80vw] max-w-[900px] h-[70vh]">
                             <Image src={preview.path} alt={preview.alt || preview.title || "media"} fill className="object-contain" />
+                        </div>
+                        <div className="mt-2 text-sm text-gray-600">
+                            <p><strong>Public ID:</strong> {preview.public_id}</p>
+                            <p><strong>Asset ID:</strong> {preview.asset_id}</p>
+                            <p><strong>URL:</strong> <span className="break-all">{preview.path}</span></p>
                         </div>
                     </div>
                 </div>
