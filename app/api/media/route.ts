@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server"
+import cloudinary from "@/lib/cloudinary"
 import connectToDatabase from "@/lib/dbconnection"
 import MediaModel from "@/models/Media.model"
-import cloudinary from "@/lib/cloudinary"
+import { NextRequest } from "next/server"
 
 export async function GET(req: NextRequest) {
     try {
@@ -40,16 +40,16 @@ export async function POST(req: NextRequest) {
     try {
         await connectToDatabase()
         const body = await req.json()
-        
+
         console.log("Media POST request body:", body)
-        
+
         const { asset_id, public_id, secure_url, thumbnail_url, title, alt } = body
-        
+
         if (!asset_id || !public_id || !secure_url) {
             console.error("Missing required fields:", { asset_id, public_id, secure_url })
-            return new Response(JSON.stringify({ 
-                success: false, 
-                message: "Missing required fields: asset_id, public_id, and secure_url are required" 
+            return new Response(JSON.stringify({
+                success: false,
+                message: "Missing required fields: asset_id, public_id, and secure_url are required"
             }), { status: 400 })
         }
 
@@ -67,17 +67,17 @@ export async function POST(req: NextRequest) {
         const media = await MediaModel.create(mediaData)
         console.log("Media created successfully:", media._id)
 
-        return new Response(JSON.stringify({ 
-            success: true, 
+        return new Response(JSON.stringify({
+            success: true,
             data: media,
             message: "Media uploaded successfully"
         }), { status: 201 })
     } catch (error: any) {
         console.error("Failed to create media:", error)
-        return new Response(JSON.stringify({ 
-            success: false, 
-            message: "Failed to create media", 
-            error: error?.message || "Unknown error" 
+        return new Response(JSON.stringify({
+            success: false,
+            message: "Failed to create media",
+            error: error?.message || "Unknown error"
         }), { status: 500 })
     }
 }
