@@ -21,7 +21,9 @@ export const zSchema = z.object({
         .string()
         .regex(phoneRegex, "Invalid phone format"),
     address: z.string().min(5, "Address must be at least 5 characters"),
+    slug: z.string().min(2, "Slug is required").max(80),
 });
+
 
 // ✅ For creating user
 export const createUserSchema = zSchema;
@@ -37,6 +39,13 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Password is required"),
 });
 
+export const categorySchema = z.object({
+    name: z.string().min(1, "Name is required").max(80),
+    slug: z.string().min(1, "Slug is required").max(80),
+    parentId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId").nullable().optional(),
+  });
+
+export type CategoryInput = z.infer<typeof categorySchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

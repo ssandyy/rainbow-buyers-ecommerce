@@ -1,54 +1,29 @@
-import { NextRequest } from "next/server"
-import connectToDatabase from "@/lib/dbconnection"
+import connectToDatabase from "@/lib/dbconnection";
+import CategoryModel from "@/models/Category.model";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
-        console.log("Testing database connection...")
+        await connectToDatabase();
         
-        // Check if DATABASE_URL or MONGODB_URI is set
-        const databaseUrl = process.env.DATABASE_URL || process.env.MONGODB_URI
-        if (!databaseUrl) {
-            return new Response(
-                JSON.stringify({
-                    success: false,
-                    message: "DATABASE_URL or MONGODB_URI environment variable is not set",
-                    config: {
-                        DATABASE_URL: process.env.DATABASE_URL ? "Set" : "Not set",
-                        MONGODB_URI: process.env.MONGODB_URI ? "Set" : "Not set"
-                    }
-                }),
-                { status: 500, headers: { "Content-Type": "application/json" } }
-            )
-        }
-
-        // Try to connect to database
-        const connection = await connectToDatabase()
+        // Test if we can connect and query the database
+        const categoryCount = await CategoryModel.countDocuments();
         
-        return new Response(
-            JSON.stringify({
-                success: true,
-                message: "Database connection successful",
-                config: {
-                    DATABASE_URL: process.env.DATABASE_URL ? "Set" : "Not set",
-                    MONGODB_URI: process.env.MONGODB_URI ? "Set" : "Not set",
-                    connectionState: connection.readyState === 1 ? "Connected" : "Disconnected"
-                }
-            }),
-            { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-    } catch (error: any) {
-        console.error("Database test failed:", error)
-        return new Response(
-            JSON.stringify({
-                success: false,
-                message: "Database connection failed",
-                error: error?.message || "Unknown error",
-                config: {
-                    DATABASE_URL: process.env.DATABASE_URL ? "Set" : "Not set",
-                    MONGODB_URI: process.env.MONGODB_URI ? "Set" : "Not set"
-                }
-            }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-        )
+        // Test fetching all categories
+        const allCategories = await CategoryModel.find({ deleted_At: null }).lean();
+        
+        return Response.json({
+            success: true,
+            message: "Database connection successful",
+            categoryCount,
+            allCategories,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Database connection error:', error);
+        return Response.json({
+            success: false,
+            message: "Database connection failed",
+            error: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }

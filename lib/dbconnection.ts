@@ -1,14 +1,16 @@
 import mongoose, { Connection } from "mongoose";
 
-// Support both DATABASE_URL and MONGODB_URI for compatibility
-const MONGODB_URL = process.env.DATABASE_URL || process.env.MONGODB_URI as string;
-
-if (!MONGODB_URL) {
-    throw new Error("Missing DATABASE_URL or MONGODB_URI environment variable");
+// Resolve URL from multiple common env names
+function resolveMongoUrl(): string | undefined {
+    return (
+        process.env.DATABASE_URL ||
+        process.env.MONGODB_URI ||
+        process.env.MONGODB_URL ||
+        undefined
+    );
 }
 
 declare global {
-    // Extend NodeJS global type
     // eslint-disable-next-line no-var
     var mongoose: {
         conn: Connection | null;
@@ -17,16 +19,22 @@ declare global {
 }
 
 // ✅ Ensure global.mongoose is always initialized
-global.mongoose ||= { conn: null, promise: null };
+// @ts-ignore
+global.mongoose ||= { conn: null, promise: null } as { conn: Connection | null; promise: Promise<Connection> | null };
 
 const cached = global.mongoose;
 
 export async function connectToDatabase(): Promise<Connection> {
     if (cached.conn) return cached.conn;
 
+    const mongoUrl = resolveMongoUrl();
+    if (!mongoUrl) {
+        throw new Error("Missing DATABASE_URL / MONGODB_URI / MONGODB_URL environment variable");
+    }
+
     if (!cached.promise) {
         cached.promise = mongoose
-            .connect(MONGODB_URL, { dbName: "rainbowbuyers", bufferCommands: false })
+            .connect(mongoUrl, { dbName: "rainbowbuyers", bufferCommands: false })
             .then((m) => m.connection);
     }
 

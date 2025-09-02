@@ -10,7 +10,8 @@ import {
     Users
 } from "lucide-react"
 
-import { ADMIN_DASHBOARD, ADMIN_MEDIA } from "@/routes/AdminPanelRoutes"
+import { ADMIN_CATEGORY_ADD, ADMIN_CATEGORY_SHOW, ADMIN_DASHBOARD, ADMIN_MEDIA } from "@/routes/AdminPanelRoutes"
+import { log } from "console"
 
 
 export const adminSidebarMenu = [
@@ -34,17 +35,18 @@ export const adminSidebarMenu = [
         url: "#",
         icon: Tag,
         subMenu: [
-            { title: "Add Category", url: "#" },
-            { title: "All Category", url: "#" },
-            {
-                title: "Sub Category",
-                url: "#",
-                subMenu: [
-                    { title: "Add Sub Category", url: "#" },
-                    { title: "All Sub Category", url: "#" }
-                ]
-            }
+            { title: "Add Category", url: ADMIN_CATEGORY_ADD },
+            { title: "All Category", url: ADMIN_CATEGORY_SHOW },
+            // {
+            //     title: "Sub Category",
+            //     url: "#",
+            //     subMenu: [
+            //         { title: "Add Sub Category", url: "#" },
+            //         { title: "All Sub Category", url: "#" }
+            //     ]
+            // }
         ]
+        
     },
     {
         title: "Product",

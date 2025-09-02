@@ -67,3 +67,9 @@ export const generateOTP = () => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     return otp;
 }
+
+
+export const isAuthenticated = async (role: string) => {
+    const auth = true;
+    return auth;
+}

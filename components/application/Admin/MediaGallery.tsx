@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import axios from "axios"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { showToast } from "@/lib/showToast"
-import { Edit2, Trash2, Save, X, Copy, Eye, Download } from "lucide-react"
+import axios from "axios"
+import { Copy, Download, Edit2, Eye, Save, X } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useMemo, useState } from "react"
 
 type MediaItem = {
     _id: string
@@ -108,7 +108,7 @@ const MediaGallery = () => {
     const permanentDelete = async () => {
         if (selected.size === 0) return
         if (!confirm(`Are you sure you want to permanently delete ${selected.size} item(s)? This action cannot be undone.`)) return
-        
+
         try {
             await axios.delete("/api/media", { data: { ids: Array.from(selected) } })
             setSelected(new Set())
@@ -138,10 +138,10 @@ const MediaGallery = () => {
                 title: editForm.title,
                 alt: editForm.alt
             })
-            
+
             if (response.data.success) {
-                setItems(prev => prev.map(i => 
-                    i._id === item._id 
+                setItems(prev => prev.map(i =>
+                    i._id === item._id
                         ? { ...i, title: editForm.title, alt: editForm.alt }
                         : i
                 ))
@@ -218,7 +218,7 @@ const MediaGallery = () => {
                 {items.map((item) => {
                     const isChecked = selected.has(item._id)
                     const isEditing = editingId === item._id
-                    
+
                     return (
                         <Card key={item._id} className={`relative overflow-hidden ${item.deleted ? "opacity-60" : ""}`}>
                             <div className="absolute left-2 top-2 z-10 flex items-center gap-1">
@@ -230,7 +230,7 @@ const MediaGallery = () => {
                                     <Edit2 className="w-3 h-3" />
                                 </Button>
                             </div>
-                            
+
                             <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
                                 <Button size="sm" variant="secondary" onClick={() => copyUrl(item.path)}>
                                     <Copy className="w-3 h-3" />
@@ -239,9 +239,9 @@ const MediaGallery = () => {
                                     <Download className="w-3 h-3" />
                                 </Button>
                             </div>
-                            
+
                             <Image src={item.thumbnail_url || item.path} alt={item.alt || item.title || "media"} width={300} height={200} className="w-full h-40 object-cover" />
-                            
+
                             {isEditing ? (
                                 <div className="p-2 space-y-2">
                                     <Input
@@ -291,11 +291,11 @@ const MediaGallery = () => {
                         <div className="relative w-[80vw] max-w-[900px] h-[70vh]">
                             <Image src={preview.path} alt={preview.alt || preview.title || "media"} fill className="object-contain" />
                         </div>
-                        <div className="mt-2 text-sm text-gray-600">
+                        {/* <div className="mt-2 text-sm text-gray-600">
                             <p><strong>Public ID:</strong> {preview.public_id}</p>
                             <p><strong>Asset ID:</strong> {preview.asset_id}</p>
                             <p><strong>URL:</strong> <span className="break-all">{preview.path}</span></p>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             )}
