@@ -2,12 +2,12 @@
 
 import DataTableWrapper from "@/components/application/Admin/DataTableWrapper"
 import BreadCrumb from "@/components/application/Breadcrumb"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ADMIN_CATEGORY_SHOW, ADMIN_DASHBOARD } from "@/routes/AdminPanelRoutes"
 import { Button } from "@/components/ui/button"
-import { useEffect, useMemo, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ADMIN_CATEGORY_SHOW, ADMIN_DASHBOARD } from "@/routes/AdminPanelRoutes"
+import { useEffect, useMemo, useState } from "react"
 import slugify from "slugify"
 
 const breadCrumbData = [
@@ -74,7 +74,7 @@ const CategoryPage = () => {
                 const payload: any = json?.data ?? json;
                 const rows: Category[] = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
                 setParents(rows);
-            } catch {}
+            } catch { }
         } finally {
             setCreating(false);
         }
@@ -105,7 +105,7 @@ const CategoryPage = () => {
                 const payload: any = json?.data ?? json;
                 const rows: Category[] = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
                 setParents(rows);
-            } catch {}
+            } catch { }
         } finally {
             setSavingEdit(false);
         }
@@ -118,10 +118,10 @@ const CategoryPage = () => {
     }
 
     return (
-        <div>
+        <div className="h-full min-h-0 flex flex-col">
             <BreadCrumb breadCrumbData={breadCrumbData} />
-            <Card>
-                <CardHeader className="flex flex-col gap-4">
+            <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                <CardHeader className="flex flex-col gap-4 sticky top-0 z-10 bg-background">
                     <div className="flex flex-row items-center justify-between w-full">
                         <CardTitle>Category</CardTitle>
                         <div className="flex gap-2">
@@ -157,7 +157,7 @@ const CategoryPage = () => {
 
                     {/* Inline Edit Category */}
                     {!showTrash && editingItem && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end border rounded-md p-3">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end border rounded-md p-3 mb-3">
                             <div className="flex flex-col gap-1">
                                 <Label htmlFor="edit-name">Edit Name</Label>
                                 <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
@@ -180,88 +180,124 @@ const CategoryPage = () => {
                         </div>
                     )}
                 </CardHeader>
-                <CardContent>
-                    <DataTableWrapper<Category>
-                        queryKey="category"
-                        fetchUrl="/api/category"
-                        trashview={showTrash}
-                        collumnConfig={[
-                            { 
-                                accessorKey: "name", 
-                                header: "Name",
-                                size: 200
-                            },
-                            { 
-                                accessorKey: "slug", 
-                                header: "Slug",
-                                size: 200
-                            },
-                            {
-                                accessorKey: "parentName",
-                                header: "Parent",
-                                size: 200
-                            },
-                            { 
-                                accessorKey: "createdAt", 
-                                header: "Created At",
-                                Cell: ({ cell }) => {
-                                    const date = new Date(cell.getValue() as string);
-                                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                <CardContent className="flex-1 min-h-0 overflow-hidden p-0">
+                    <div className="h-full overflow-auto">
+                        <div className="w-full">
+                        <DataTableWrapper<Category>
+                            queryKey="category"
+                            fetchUrl="/api/category"
+                            trashview={showTrash}
+                            collumnConfig={[
+                                { accessorKey: "name", header: "Name", size: 200 },
+                                { accessorKey: "slug", header: "Slug", size: 200 },
+                                { accessorKey: "parentName", header: "Parent", size: 200 },
+                                {
+                                    accessorKey: "createdAt",
+                                    header: "Created At",
+                                    Cell: ({ cell }) => {
+                                        const date = new Date(cell.getValue() as string);
+                                        return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+                                    },
+                                    size: 150,
                                 },
-                                size: 150
-                            },
-                            { 
-                                accessorKey: "updatedAt", 
-                                header: "Updated At",
-                                Cell: ({ cell }) => {
-                                    const date = new Date(cell.getValue() as string);
-                                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                                {
+                                    accessorKey: "updatedAt",
+                                    header: "Updated At",
+                                    Cell: ({ cell }) => {
+                                        const date = new Date(cell.getValue() as string);
+                                        return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+                                    },
+                                    size: 150,
                                 },
-                                size: 150
-                            },
-                            showTrash ? {
-                                header: "Actions",
-                                id: "actions",
-                                Cell: ({ row }) => {
-                                    const item = row.original as Category;
-                                    const handleRestore = async () => {
-                                        await fetch(`/api/category/${item._id}?restore=1`, { method: 'POST' });
-                                        (document.getElementById('admin-table-refresh') as HTMLButtonElement)?.click();
+                                showTrash
+                                    ? {
+                                        header: "Actions",
+                                        id: "actions",
+                                        Cell: ({ row }) => {
+                                            const item = row.original as Category;
+                                            const handleRestore = async () => {
+                                                await fetch(`/api/category/${item._id}?restore=1`, {
+                                                    method: "POST",
+                                                });
+                                                (
+                                                    document.getElementById(
+                                                        "admin-table-refresh"
+                                                    ) as HTMLButtonElement
+                                                )?.click();
+                                            };
+                                            const handleHardDelete = async () => {
+                                                if (!confirm("Permanently delete this category?")) return;
+                                                await fetch(`/api/category/${item._id}?hard=1`, {
+                                                    method: "DELETE",
+                                                });
+                                                (
+                                                    document.getElementById(
+                                                        "admin-table-refresh"
+                                                    ) as HTMLButtonElement
+                                                )?.click();
+                                            };
+                                            return (
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={handleRestore}
+                                                    >
+                                                        Restore
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={handleHardDelete}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            );
+                                        },
+                                        size: 180,
                                     }
-                                    const handleHardDelete = async () => {
-                                        if (!confirm('Permanently delete this category?')) return;
-                                        await fetch(`/api/category/${item._id}?hard=1`, { method: 'DELETE' });
-                                        (document.getElementById('admin-table-refresh') as HTMLButtonElement)?.click();
-                                    }
-                                    return (
-                                        <div className="flex gap-2">
-                                            <Button size="sm" variant="secondary" onClick={handleRestore}>Restore</Button>
-                                            <Button size="sm" variant="destructive" onClick={handleHardDelete}>Delete Forever</Button>
-                                        </div>
-                                    )
-                                },
-                                size: 240
-                            } : {
-                                header: "Actions",
-                                id: "actions",
-                                Cell: ({ row }) => {
-                                    const item = row.original as Category;
-                                    const handleDelete = async () => {
-                                        await fetch(`/api/category/${item._id}`, { method: 'DELETE' });
-                                        (document.getElementById('admin-table-refresh') as HTMLButtonElement)?.click();
-                                    }
-                                    const handleEditClick = () => openEdit(item);
-                                    return (
-                                        <div className="flex gap-2">
-                                            <Button size="sm" variant="secondary" onClick={handleEditClick}>Edit</Button>
-                                            <Button size="sm" variant="destructive" onClick={handleDelete}>Delete</Button>
-                                        </div>
-                                    )
-                                },
-                                size: 180
-                            }
-                        ]}
-                    />
+                                    : {
+                                        header: "Actions",
+                                        id: "actions",
+                                        Cell: ({ row }) => {
+                                            const item = row.original as Category;
+                                            const handleDelete = async () => {
+                                                await fetch(`/api/category/${item._id}`, {
+                                                    method: "DELETE",
+                                                });
+                                                (
+                                                    document.getElementById(
+                                                        "admin-table-refresh"
+                                                    ) as HTMLButtonElement
+                                                )?.click();
+                                            };
+                                            const handleEditClick = () => openEdit(item);
+                                            return (
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={handleEditClick}
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={handleDelete}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            );
+                                        },
+                                        size: 180,
+                                    },
+                            ]}
+                        />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>

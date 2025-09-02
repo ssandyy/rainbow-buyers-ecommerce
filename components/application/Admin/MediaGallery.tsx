@@ -214,36 +214,28 @@ const MediaGallery = () => {
                 <Button size="sm" onClick={fetchItems} disabled={loading}>{loading ? "Loading..." : "Refresh"}</Button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pt-0">
                 {items.map((item) => {
                     const isChecked = selected.has(item._id)
                     const isEditing = editingId === item._id
 
                     return (
-                        <Card key={item._id} className={`relative overflow-hidden ${item.deleted ? "opacity-60" : ""}`}>
-                            <div className="absolute left-2 top-2 z-10 flex items-center gap-1">
-                                <input type="checkbox" checked={isChecked} onChange={() => toggleOne(item._id)} />
-                                <Button size="sm" variant="secondary" onClick={() => setPreview(item)}>
-                                    <Eye className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" variant="secondary" onClick={() => startEditing(item)}>
-                                    <Edit2 className="w-3 h-3" />
-                                </Button>
-                            </div>
+                        <Card key={item._id} className={`py-0 gap-2 relative overflow-hidden ${item.deleted ? "opacity-60" : ""}`}>
+                            <Image
+                                src={item.path || item.thumbnail_url}
+                                alt={item.alt || item.title || "media"}
+                                width={300}
+                                height={200}
+                                className="w-full h-50 object-fill"
+                                quality={85}
+                                loading="lazy"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+                            />
 
-                            <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
-                                <Button size="sm" variant="secondary" onClick={() => copyUrl(item.path)}>
-                                    <Copy className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" variant="secondary" onClick={() => downloadImage(item.path, item.title || item.public_id)}>
-                                    <Download className="w-3 h-3" />
-                                </Button>
-                            </div>
 
-                            <Image src={item.thumbnail_url || item.path} alt={item.alt || item.title || "media"} width={300} height={200} className="w-full h-40 object-cover" />
 
                             {isEditing ? (
-                                <div className="p-2 space-y-2">
+                                <div className="p-2 mb-5 space-y-2">
                                     <Input
                                         value={editForm.title}
                                         onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
@@ -266,9 +258,31 @@ const MediaGallery = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="p-2 text-xs truncate" title={item.title || item.public_id}>
-                                    {item.title || item.public_id}
-                                </div>
+                                <>
+                                    <div className="absolute inset-x-0 bottom-0 gap-2 z-10 flex items-center justify-between px-2 py-1 bg-gradient-to-t from-black/60 to-transparent ">
+                                        <div className="flex items-center gap-2 text-white">
+                                            <input type="checkbox" checked={isChecked} onChange={() => toggleOne(item._id)} />
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Button size="sm" variant="secondary" onClick={() => setPreview(item)}>
+                                                <Eye className="w-2 h-2" />
+                                            </Button>
+                                            <Button size="sm" variant="secondary" onClick={() => startEditing(item)}>
+                                                <Edit2 className="w-2 h-2" />
+                                            </Button>
+                                            <Button size="sm" variant="secondary" onClick={() => copyUrl(item.path)}>
+                                                <Copy className="w-2 h-2" />
+                                            </Button>
+                                            <Button size="sm" variant="secondary" onClick={() => downloadImage(item.path, item.title || item.public_id)}>
+                                                <Download className="w-2 h-2" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div className=" text-center p-2  mb-10 text-xs truncate" title={item.title || item.public_id}>
+                                        {item.title || item.public_id}
+                                    </div>
+                                </>
+
                             )}
                         </Card>
                     )

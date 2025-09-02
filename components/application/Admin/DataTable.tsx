@@ -75,7 +75,13 @@ const DataTable = <T extends object>({
             if (!response.ok) throw new Error("Failed to fetch");
             return await response.json();
         },
+        // performance: avoid unnecessary refetches and keep cache briefly
         placeholderData: keepPreviousData,
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        refetchOnMount: false,
     });
 
     // Normalize response to { rows, total }
