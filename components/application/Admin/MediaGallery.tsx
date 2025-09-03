@@ -183,6 +183,16 @@ const MediaGallery = () => {
         }
     }
 
+    const selectedItems = useMemo(
+        () => items.filter((i) => selected.has(i._id)),
+        [items, selected]
+    )
+
+    const canRestore = useMemo(
+        () => selectedItems.length > 0 && selectedItems.every((i) => i.deleted),
+        [selectedItems]
+    )
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
@@ -194,8 +204,11 @@ const MediaGallery = () => {
                 <div className="flex items-center gap-2">
                     <Button variant="secondary" onClick={selectNone} disabled={selected.size === 0}>Select None</Button>
                     <Button variant="secondary" onClick={invertSelection} disabled={items.length === 0}>Invert</Button>
-                    <Button variant="destructive" onClick={softDelete} disabled={selected.size === 0}>Move to Trash</Button>
-                    <Button onClick={restore} disabled={selected.size === 0}>Restore</Button>
+                    <Button variant="warning" onClick={softDelete} disabled={selected.size === 0}>Move to Trash</Button>
+                    {canRestore &&
+
+                        <Button onClick={restore} disabled={selected.size === 0}>Restore</Button>
+                    }
                     <Button variant="destructive" onClick={permanentDelete} disabled={selected.size === 0}>Delete Permanently</Button>
                 </div>
             </div>

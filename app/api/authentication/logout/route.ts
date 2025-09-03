@@ -1,17 +1,26 @@
-import { response } from "@/lib/apiHelperFunctions";
-import connectToDatabase from "@/lib/dbconnection";
-import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-
-export const POST = async (request: Request) => {
+export async function POST() {
     try {
-        await connectToDatabase();
-        const cookieStore = await cookies()
-        cookieStore.delete('access_token')
-        return response({ success: true, statusCode: 200, message: "User logged out successfully", data: null })
+        // Delete cookie by setting it to empty + expired
+        const response = NextResponse.json(
+            { success: true, message: "Logged out successfully" },
+            { status: 200 }
+        );
 
+        response.cookies.set({
+            name: "access_token",
+            value: "",
+            httpOnly: true,
+            path: "/",
+            expires: new Date(0), // Expire immediately
+        });
+
+        return response;
     } catch (error) {
-        console.log(error);
-        return response({ success: false, statusCode: 500, message: "Something went wrong", data: null })
+        return NextResponse.json(
+            { success: false, message: "Something went wrong" },
+            { status: 500 }
+        );
     }
 }

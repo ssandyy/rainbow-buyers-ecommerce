@@ -1,10 +1,10 @@
 
-const AuthRootLayout = ({ children }: { children: React.ReactNode }) => {
+const AuthRootlayout = ({ children }: any) => {
     return (
-        <div className="flex items-center justify-center h-screen w-screen">
+        <div>
             {children}
         </div>
     )
 }
 
-export default AuthRootLayout
+export default AuthRootlayout

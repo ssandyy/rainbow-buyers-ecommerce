@@ -3,6 +3,7 @@ import { ButtonLoading } from "@/components/application/ButtonLoading"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { showToast } from "@/lib/showToast"
 import { zSchema } from "@/lib/zodSchema"
 import Logo from "@/public/heart.png"
 import { WEBSITE_LOGIN } from "@/routes/WebsiteRoutes"
@@ -28,7 +29,8 @@ const ForgotPasswordpage = () => {
 
     const onSubmit = async (data: any) => {
         console.log("Submitting...", data)
-        await new Promise((resolve) => setTimeout(resolve, 2000)) // fake API call
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+        showToast({ type: "success", message: "Password reset instructions sent" })
         setSuccess("Check your inbox for further instructions");
 
 
@@ -43,8 +45,8 @@ const ForgotPasswordpage = () => {
                         <Image className="max-w-[100px] mx-auto" src={Logo.src} width={100} height={100} alt="logo" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-3xl font-bold">Forgot Password</h1>
-                        <p>Recover By verifying your email</p>
+                        <h1 className="text-3xl font-bold">Forgot Password ? </h1>
+                        <p>Recover back your password by verifying your email</p>
                     </div>
                     <div>
                         <Form {...form}>
@@ -57,7 +59,7 @@ const ForgotPasswordpage = () => {
                                             <FormItem>
                                                 <FormLabel>Email</FormLabel>
                                                 <FormControl>
-                                                    <Input type="email" placeholder="example@email.com" {...field} />
+                                                    <Input type="email" placeholder="registered@email.com" {...field} />
                                                 </FormControl>
                                                 <FormMessage>
                                                     {form.formState.errors.email?.message ||
