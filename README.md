@@ -14,12 +14,9 @@ Mongodb with mongoose
 Jose -> to create token to verify email 
 NodeMailer ->  to send mail to user --> npm i nodemailer
 bcryptjs -> to bcrypt password.
-axios -> mail service..!
+axios -> mail for link and otp generation service..!
 
 redux-tool kit:  npm install @reduxjs/toolkit react-redux
 redux-persist : npm install redux-persist
 
-
-
 generate secrect key = openssl rand -base64 32
-

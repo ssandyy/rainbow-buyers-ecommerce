@@ -43,8 +43,20 @@ export const categorySchema = z.object({
     name: z.string().min(1, "Name is required").max(80),
     slug: z.string().min(1, "Slug is required").max(80),
     parentId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId").nullable().optional(),
-  });
+});
 
+export const productSchema = z.object({
+    name: z.string().min(1, "Name is required").max(80),
+    slug: z.string().min(1, "Slug is required").max(80),
+    description: z.string().min(1, "Description is required").max(255),
+    category: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
+    mrp: z.number(),
+    sellingPrice: z.number(),
+    discount: z.number(),
+    media: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId")),
+});
+
+export type ProductInput = z.infer<typeof productSchema>;
 export type CategoryInput = z.infer<typeof categorySchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

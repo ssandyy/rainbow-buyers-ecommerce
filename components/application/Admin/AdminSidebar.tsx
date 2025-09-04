@@ -95,7 +95,6 @@ const AdminSidebar = () => {
 
     const auth = useSelector((store: any) => store.authStore.auth)
 
-
     return (
         <Sidebar collapsible="icon" className="border-r  bg-background z-30 relative">
             {/* Toggle Button on Border - Higher z-index */}
@@ -128,7 +127,7 @@ const AdminSidebar = () => {
                             />
                         </div>
                         <span className="ml-3 font-semibold text-lg truncate group-data-[collapsible=icon]:hidden">
-                            Admin Panel
+                            Rainbow Buyers
                         </span>
                     </div>
                     {/* <div className="md:hidden absolute -right-4 cursor-pointer">

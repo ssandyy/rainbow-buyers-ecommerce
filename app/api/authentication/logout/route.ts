@@ -19,7 +19,7 @@ export async function POST() {
         return response;
     } catch (error) {
         return NextResponse.json(
-            { success: false, message: "Something went wrong" },
+            { success: false, message: ` Something went wrong, ${error}` },
             { status: 500 }
         );
     }

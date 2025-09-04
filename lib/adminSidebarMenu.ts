@@ -10,8 +10,7 @@ import {
     Users
 } from "lucide-react"
 
-import { ADMIN_CATEGORY_ADD, ADMIN_CATEGORY_SHOW, ADMIN_DASHBOARD, ADMIN_MEDIA } from "@/routes/AdminPanelRoutes"
-import { log } from "console"
+import { ADMIN_CATEGORY_ADD, ADMIN_CATEGORY_SHOW, ADMIN_DASHBOARD, ADMIN_MEDIA, ADMIN_PRODUCT_ADD, ADMIN_PRODUCT_SHOW } from "@/routes/AdminPanelRoutes"
 
 
 export const adminSidebarMenu = [
@@ -25,11 +24,7 @@ export const adminSidebarMenu = [
         url: "#",
         icon: Users,
     },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
-    },
+
     {
         title: "Category",
         url: "#",
@@ -46,27 +41,19 @@ export const adminSidebarMenu = [
             //     ]
             // }
         ]
-        
+
     },
     {
         title: "Product",
         url: "#",
         icon: Package,
         subMenu: [
-            { title: "Add Product", url: "#" },
-            { title: "All Product", url: "#" },
-            { title: "Add Variants", url: "#" }
+            { title: "Add Product", url: ADMIN_PRODUCT_ADD },
+            { title: "All Product", url: ADMIN_PRODUCT_SHOW }
+            // { title: "Add Variants", url: ADMIN_PRODUCT_EDIT }
         ]
     },
-    {
-        title: "Coupons",
-        url: "#",
-        icon: Percent,
-        subMenu: [
-            { title: "Add Coupons", url: "#" },
-            { title: "All Coupons", url: "#" }
-        ]
-    },
+
     {
         title: "Orders",
         url: "#",
@@ -89,5 +76,19 @@ export const adminSidebarMenu = [
         //     { title: "Add Media", url: "#" },
         //     { title: "All Media", url: ADMIN_MEDIA }
         // ]
+    },
+    {
+        title: "Coupons",
+        url: "#",
+        icon: Percent,
+        subMenu: [
+            { title: "Add Coupons", url: "#" },
+            { title: "All Coupons", url: "#" }
+        ]
+    },
+    {
+        title: "Settings",
+        url: "#",
+        icon: Settings,
     }
 ]

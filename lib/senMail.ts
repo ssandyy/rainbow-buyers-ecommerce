@@ -33,7 +33,7 @@ export const sendMail = async ({ subject, receiver, body }: Props) => {
     } catch (error) {
         return {
             success: false,
-            message: "Email not sent",
+            message: ` Email not sent, ${error}`,
         };
     }
 }

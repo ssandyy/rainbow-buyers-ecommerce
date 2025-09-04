@@ -157,25 +157,17 @@ const LoginPage = () => {
     }
 
     return (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen p-2">
 
             <Card className="relative w-[450px] overflow-hidden rounded-2xl">
-                {/* <BorderBeam
-                    size={80}
-                    initialOffset={20}
-                    className="from-transparent gradient-radial bg-clip-border to-transparent"
-                    transition={{
-                        type: "spring",
-                        stiffness: 60,
-                        damping: 20,
-                    }}
-                /> */}
+
+
                 <CardContent>
                     <div>
                         <Image className="max-w-[100px] mx-auto" src={Logo.src} width={100} height={80} alt="logo" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-2xl font-bold">Rainbow Buyer's</h1>
+                        <h1 className="text-2xl font-bold">Rainbow Buyers</h1>
                         <p>Login with your email and password</p>
                     </div>
                     <Separator orientation="horizontal" className="text-gray-400" />
@@ -224,7 +216,6 @@ const LoginPage = () => {
                                         )}
                                     />
                                 </div>
-
                                 {!showOTPInput && (
                                     <ButtonLoading
                                         className="w-full cursor-pointer"
@@ -235,12 +226,21 @@ const LoginPage = () => {
                                 )}
 
                                 {showOTPInput && (
-
                                     <MagicCard
                                         gradientColor={theme === "dark" ? "#262626" : "#D9D9D955"}
                                         className="p-0 rounded-3xl"
                                     >
                                         <div>
+                                            <BorderBeam
+                                                size={100}
+                                                initialOffset={30}
+                                                className="from-transparent gradient-radial bg-clip-border to-transparent"
+                                                transition={{
+                                                    type: "spring",
+                                                    stiffness: 70,
+                                                    damping: 20,
+                                                }}
+                                            />
                                             <div className="text-center justify-center space-y-3 p-5  ">
                                                 <FormField
                                                     name="otp"

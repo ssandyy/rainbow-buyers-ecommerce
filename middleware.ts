@@ -3,24 +3,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { WEBSITE_FORGOT_PASSWORD, WEBSITE_HOME, WEBSITE_LOGIN, WEBSITE_SIGNUP } from "./routes/WebsiteRoutes";
 
 export async function middleware(request: NextRequest) {
+    const publicPaths = [WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_FORGOT_PASSWORD, "/auth/verify-otp", "/auth/verify-email"];
     try {
-        const publicPaths = [WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_FORGOT_PASSWORD, "/auth/verify-otp", "/auth/signup", "/auth/verify-email"];
+
         const isPublicPath = (path: string) => publicPaths.some((p) => path === p || path.startsWith(p + "/"));
         const pathname = request.nextUrl.pathname;
 
         const token = request.cookies.get("access_token");
 
-        // 🔓 Allow public routes
+        // public routes
         if (!token && isPublicPath(pathname)) {
             return NextResponse.next();
         }
 
-        // 🔒 Redirect unauthenticated users
+        // Redirect unauthenticated users
         if (!token) {
             return NextResponse.redirect(new URL(WEBSITE_LOGIN, request.url));
         }
 
-        // ✅ Verify JWT
+        //Verify JWT
         const { payload } = await jwtVerify(
             token.value,
             new TextEncoder().encode(process.env.SECRET_KEY)
@@ -28,7 +29,7 @@ export async function middleware(request: NextRequest) {
 
         const current_user_role = String(payload.role || "user");
 
-        // Block public auth pages for already authenticated users
+
         if (isPublicPath(pathname)) {
             return NextResponse.redirect(new URL(WEBSITE_HOME, request.url));
         }
@@ -55,7 +56,7 @@ export async function middleware(request: NextRequest) {
 
         const url = new URL(request.url);
         const pathname = url.pathname;
-        const publicPaths = [WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_FORGOT_PASSWORD, "/auth/verify-otp", "/auth/signup", "/auth/verify-email"];
+        // const publicPaths = [WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_FORGOT_PASSWORD, "/auth/verify-otp", "/auth/verify-email"];
         const isPublicPath = (path: string) => publicPaths.some((p) => path === p || path.startsWith(p + "/"));
 
         // If we're already on a public/auth page, allow loading the page

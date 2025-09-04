@@ -23,8 +23,8 @@ const Navbar = () => {
     }
 
     return (
-        <header className="border-b">
-            <div className="container mx-auto flex items-center justify-between py-3 px-6">
+        <header className="border-b bg-gray-100 dark:bg-gray-800">
+            <div className="container mx-auto flex items-center justify-between py-3 px-6 dark:text-white">
                 <Link href="/" className="font-semibold">Rainbow Buyers</Link>
                 <nav className="flex items-center gap-3">
                     <Link href={WEBSITE_HOME} className="text-sm">Home</Link>

@@ -1,6 +1,5 @@
 import mongoose, { Connection } from "mongoose";
 
-// Resolve URL from multiple common env names
 function resolveMongoUrl(): string | undefined {
     return (
         process.env.DATABASE_URL ||
@@ -11,15 +10,13 @@ function resolveMongoUrl(): string | undefined {
 }
 
 declare global {
-    // eslint-disable-next-line no-var
     var mongoose: {
         conn: Connection | null;
         promise: Promise<Connection> | null;
     };
 }
 
-// ✅ Ensure global.mongoose is always initialized
-// @ts-ignore
+
 global.mongoose ||= { conn: null, promise: null } as { conn: Connection | null; promise: Promise<Connection> | null };
 
 const cached = global.mongoose;

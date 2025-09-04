@@ -26,7 +26,7 @@ export async function GET(req: Request) {
             globalFilter = (searchParams.get('globalFilter') || '').toString();
             try { filters = JSON.parse(searchParams.get('filters') || '[]'); } catch { filters = []; }
             try { sorting = JSON.parse(searchParams.get('sorting') || '[]'); } catch { sorting = []; }
-        } catch {}
+        } catch { }
 
         // Build query
         const query: any = { deleted_At: isTrash ? { $ne: null } : null };

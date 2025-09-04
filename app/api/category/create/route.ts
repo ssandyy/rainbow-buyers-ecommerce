@@ -17,20 +17,20 @@ async function generateUniqueSlug(baseName: string) {
 export async function POST(req: Request) {
     try {
         console.log('Category create API called');
-        
+
         const auth = await isAuthenticated('admin');
         if (!auth) {
             console.log('Authentication failed for category creation');
             return response({ success: false, statusCode: 401, message: "Unauthorized" })
         }
         console.log('Authentication successful for category creation');
-        
+
         await connectToDatabase();
         console.log('Database connected for category creation');
 
         const payload = await req.json();
         console.log('Received payload:', payload);
-        
+
         // Accept name and optional slug/parentId
         const catSchema = categorySchema.pick({
             name: true,
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 
         const newCat = await CategoryModel.create({ name, slug, parentId: parentId ?? null });
         console.log('Category created successfully:', newCat);
-        
+
         return response({ success: true, statusCode: 200, message: "Category created successfully", data: newCat })
 
     } catch (error) {

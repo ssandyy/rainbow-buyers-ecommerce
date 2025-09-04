@@ -2,7 +2,7 @@ import { Bounce, toast } from "react-toastify";
 
 export const showToast = ({ type, message }: { type: string, message: string }) => {
 
-    let options = {
+    const options = {
         position: "top-center",
         autoClose: 3000,
         hideProgressBar: false,
