@@ -72,7 +72,7 @@ const AddCategoryPage = ({ initialData }: Props) => {
     const onSubmit = async (values: CategoryInput) => {
         setLoading(true);
         try {
-            const { data: response } = await axios.post('/api/category/create', values);
+            const { data: response } = await axios.post('/api/product/create', values);
 
             if (!response.success) {
                 showToast({ message: response.message, type: "error" });
@@ -88,7 +88,6 @@ const AddCategoryPage = ({ initialData }: Props) => {
     }
 
 
-
     return (
         <div>
             <BreadCrumb breadCrumbData={breadCrumbData} />
@@ -99,6 +98,7 @@ const AddCategoryPage = ({ initialData }: Props) => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
+
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div>
                             <Input placeholder="Category name" {...register("name")} />

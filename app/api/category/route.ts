@@ -97,6 +97,8 @@ export async function GET(req: Request) {
                 data: { data: [], meta: { totalRowCount: 0, debug: dbErr?.message || 'DB error' } }
             });
         }
+
+        // const getCategory = await CategoryModel.aggregate().match(query).sort(sort).skip(Math.max(0, start)).limit(Math.max(1, size)).exec();
     } catch (e: any) {
         // Final non-fatal fallback as well
         return response({

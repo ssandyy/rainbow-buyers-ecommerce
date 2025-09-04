@@ -48,12 +48,17 @@ export const categorySchema = z.object({
 export const productSchema = z.object({
     name: z.string().min(1, "Name is required").max(80),
     slug: z.string().min(1, "Slug is required").max(80),
-    description: z.string().min(1, "Description is required").max(255),
-    category: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
-    mrp: z.number(),
-    sellingPrice: z.number(),
-    discount: z.number(),
-    media: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId")),
+    description: z.string().min(5, "Description is required").max(255),
+    category: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).min(1, "Select at least one category"),
+    mrp: z.union([
+        z.number().positive('Expected Positive value'), z.string().transform((value) => Number(value)).refine((value) => !Number.isNaN(value) && Number.isFinite(value) && value > 0)
+    ]),
+    sellingPrice: z.union([
+        z.number().positive('Expected Positive value'), z.string().transform((value) => Number(value)).refine((value) => !Number.isNaN(value) && Number.isFinite(value) && value > 0)]),
+    discount: z.union([
+        z.number().positive('Expected Positive value'), z.string().transform((value) => Number(value)).refine((value) => !Number.isNaN(value) && Number.isFinite(value) && value > 0)
+    ]),
+    media: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Please select a valid media")).min(1, "At least one media is required"),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;
