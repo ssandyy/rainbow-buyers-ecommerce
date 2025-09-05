@@ -14,7 +14,7 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFetch } from "@/hooks/use-fetch";
 import { showToast } from "@/lib/showToast";
-import { ProductInput, productSchema } from "@/lib/zodSchema";
+import { productSchema } from "@/lib/zodSchema";
 import { ADMIN_DASHBOARD, ADMIN_PRODUCT_SHOW } from "@/routes/AdminPanelRoutes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -178,6 +178,7 @@ const AddProduct = ({ initialData }: Props) => {
         }
 
         setLoading(true);
+
         try {
             // Include selected media in the form data
             const formData = {
@@ -191,7 +192,7 @@ const AddProduct = ({ initialData }: Props) => {
                 showToast({ message: response.message, type: "error" });
                 return;
             }
-            
+
             form.reset();
             setSelectedMedia([]);
             showToast({ message: "Product added successfully", type: "success" });
@@ -329,13 +330,13 @@ const AddProduct = ({ initialData }: Props) => {
                                     />
                                     <MediaModal isMultiple={true} open={open} setOpen={setOpen} selectedMedia={selectedMedia} setSelectedMedia={setSelectedMedia} />
                                 </div>
-                                
+
                                 {/* Media Preview */}
-                                <SelectedMediaPreview 
-                                    selectedMediaIds={selectedMedia} 
+                                <SelectedMediaPreview
+                                    selectedMediaIds={selectedMedia}
                                     onRemove={handleRemoveMedia}
                                 />
-                                
+
                                 {selectedMedia.length === 0 && (
                                     <p className="text-red-500 text-sm">At least one media is required</p>
                                 )}
