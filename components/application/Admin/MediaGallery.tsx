@@ -5,9 +5,9 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { showToast } from "@/lib/showToast"
 import axios from "axios"
-import { Copy, Download, Edit2, Eye, Save, X } from "lucide-react"
+import { Copy, Download, Edit2, Eye, Save, Trash2, X } from "lucide-react"
 import Image from "next/image"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 
 type MediaItem = {
     _id: string
@@ -20,7 +20,19 @@ type MediaItem = {
     deleted?: string | null
 }
 
-const MediaGallery = () => {
+interface MediaGalleryProps {
+    selectedMedia?: string[]
+    setSelectedMedia?: (media: string[]) => void
+    isMultiple?: boolean
+    isModal?: boolean
+}
+
+const MediaGallery = ({ 
+    selectedMedia = [], 
+    setSelectedMedia, 
+    isMultiple = true, 
+    isModal = false 
+}: MediaGalleryProps) => {
     const [items, setItems] = useState<MediaItem[]>([])
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [loading, setLoading] = useState(false)
@@ -31,6 +43,30 @@ const MediaGallery = () => {
     const [total, setTotal] = useState(0)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState({ title: "", alt: "" })
+
+    // Sync selected state with parent when in modal mode
+    useEffect(() => {
+        if (isModal && setSelectedMedia) {
+            setSelected(new Set(selectedMedia))
+        }
+    }, [selectedMedia, isModal, setSelectedMedia])
+
+    // Update parent state when local selected state changes (for modal mode)
+    // Use a ref to prevent infinite loops
+    const prevSelectedRef = useRef<Set<string>>(new Set())
+    useEffect(() => {
+        if (isModal && setSelectedMedia) {
+            // Only update if the selection actually changed
+            const selectedArray = Array.from(selected)
+            const prevArray = Array.from(prevSelectedRef.current)
+            
+            if (selectedArray.length !== prevArray.length || 
+                !selectedArray.every(id => prevArray.includes(id))) {
+                setSelectedMedia(selectedArray)
+                prevSelectedRef.current = new Set(selected)
+            }
+        }
+    }, [selected, isModal, setSelectedMedia])
 
     const pages = Math.max(1, Math.ceil(total / limit))
 
@@ -75,10 +111,20 @@ const MediaGallery = () => {
     const toggleOne = (id: string) => {
         setSelected((prev) => {
             const next = new Set(prev)
-            if (next.has(id)) next.delete(id)
-            else next.add(id)
+            if (next.has(id)) {
+                next.delete(id)
+            } else {
+                if (!isMultiple) {
+                    // If not multiple selection, clear all and select only this one
+                    next.clear()
+                }
+                next.add(id)
+            }
+            
             return next
         })
+        
+        // Update parent state after state update (useEffect will handle this)
     }
 
     const softDelete = async () => {
@@ -116,6 +162,28 @@ const MediaGallery = () => {
             showToast({ type: "success", message: `${selected.size} item(s) permanently deleted` })
         } catch (error) {
             showToast({ type: "error", message: "Failed to delete items" })
+        }
+    }
+
+    const deleteSingleItem = async (item: MediaItem) => {
+        if (!confirm(`Are you sure you want to delete "${item.title || item.public_id}"? This action cannot be undone.`)) return
+
+        try {
+            await axios.delete("/api/media", { data: { ids: [item._id] } })
+            fetchItems()
+            showToast({ type: "success", message: "Item deleted successfully" })
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to delete item" })
+        }
+    }
+
+    const softDeleteSingleItem = async (item: MediaItem) => {
+        try {
+            await axios.patch("/api/media", { ids: [item._id], action: "soft-delete" })
+            fetchItems()
+            showToast({ type: "success", message: `"${item.title || item.public_id}" moved to trash` })
+        } catch (error) {
+            showToast({ type: "error", message: "Failed to delete item" })
         }
     }
 
@@ -203,7 +271,7 @@ const MediaGallery = () => {
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="secondary" onClick={selectNone} disabled={selected.size === 0}>Select None</Button>
-                    <Button variant="secondary" onClick={invertSelection} disabled={items.length === 0}>Invert</Button>
+                    {/* <Button variant="secondary" onClick={invertSelection} disabled={items.length === 0}>Invert</Button> */}
                     <Button variant="warning" onClick={softDelete} disabled={selected.size === 0}>Move to Trash</Button>
                     {canRestore &&
 
@@ -213,18 +281,25 @@ const MediaGallery = () => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
-                <input
+            <div className="flex items-center gap-3 flex-wrap">
+                <Input
                     value={q}
                     onChange={(e) => { setPage(1); setQ(e.target.value) }}
                     placeholder="Search by title or public id"
-                    className="border px-3 py-2 rounded w-64"
+                    className="w-64"
                 />
-                <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={includeDeleted} onChange={() => { setPage(1); setIncludeDeleted((v) => !v) }} />
-                    <span>Show deleted</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={includeDeleted}
+                        onChange={() => { setPage(1); setIncludeDeleted((v) => !v) }}
+                        className="w-4 h-4"
+                    />
+                    <span className="text-sm">Show deleted</span>
                 </label>
-                <Button size="sm" onClick={fetchItems} disabled={loading}>{loading ? "Loading..." : "Refresh"}</Button>
+                <Button size="sm" onClick={fetchItems} disabled={loading}>
+                    {loading ? "Loading..." : "Refresh"}
+                </Button>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pt-0">
@@ -233,13 +308,24 @@ const MediaGallery = () => {
                     const isEditing = editingId === item._id
 
                     return (
-                        <Card key={item._id} className={`py-0 gap-2 relative overflow-hidden ${item.deleted ? "opacity-60" : ""}`}>
+                        <Card key={item._id} className={`py-0 gap-2 relative overflow-hidden group hover:shadow-lg transition-shadow ${item.deleted ? "opacity-60" : ""}`}>
+                            {/* Delete icon in top corner */}
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                                // onClick={() => deleteSingleItem(item)}
+                                onClick={() => softDeleteSingleItem(item)}
+                            >
+                                <Trash2 className="w-3 h-3" />
+                            </Button>
+
                             <Image
                                 src={item.path || item.thumbnail_url}
                                 alt={item.alt || item.title || "media"}
                                 width={300}
                                 height={200}
-                                className="w-full h-50 object-fill"
+                                className="w-full h-48 object-cover"
                                 quality={85}
                                 loading="lazy"
                                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
@@ -272,27 +358,35 @@ const MediaGallery = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="absolute inset-x-0 bottom-0 gap-2 z-10 flex items-center justify-between px-2 py-1 bg-gradient-to-t from-black/60 to-transparent ">
-                                        <div className="flex items-center gap-2 text-white">
-                                            <input type="checkbox" checked={isChecked} onChange={() => toggleOne(item._id)} />
+                                    {/* Bottom overlay with controls */}
+                                    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2 text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => toggleOne(item._id)}
+                                                    className="w-3 h-3"
+                                                />
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Button size="sm" variant="secondary" onClick={() => setPreview(item)} className="h-6 w-6 p-0">
+                                                    <Eye className="w-3 h-3" />
+                                                </Button>
+                                                <Button size="sm" variant="secondary" onClick={() => startEditing(item)} className="h-6 w-6 p-0">
+                                                    <Edit2 className="w-3 h-3" />
+                                                </Button>
+                                                <Button size="sm" variant="secondary" onClick={() => copyUrl(item.path)} className="h-6 w-6 p-0">
+                                                    <Copy className="w-3 h-3" />
+                                                </Button>
+                                                <Button size="sm" variant="secondary" onClick={() => downloadImage(item.path, item.title || item.public_id)} className="h-6 w-6 p-0">
+                                                    <Download className="w-3 h-3" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Button size="sm" variant="secondary" onClick={() => setPreview(item)}>
-                                                <Eye className="w-2 h-2" />
-                                            </Button>
-                                            <Button size="sm" variant="secondary" onClick={() => startEditing(item)}>
-                                                <Edit2 className="w-2 h-2" />
-                                            </Button>
-                                            <Button size="sm" variant="secondary" onClick={() => copyUrl(item.path)}>
-                                                <Copy className="w-2 h-2" />
-                                            </Button>
-                                            <Button size="sm" variant="secondary" onClick={() => downloadImage(item.path, item.title || item.public_id)}>
-                                                <Download className="w-2 h-2" />
-                                            </Button>
+                                        <div className="text-white text-xs truncate" title={item.title || item.public_id}>
+                                            {item.title || item.public_id}
                                         </div>
-                                    </div>
-                                    <div className=" text-center p-2  mb-10 text-xs truncate" title={item.title || item.public_id}>
-                                        {item.title || item.public_id}
                                     </div>
                                 </>
 

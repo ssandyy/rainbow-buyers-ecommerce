@@ -1,6 +1,7 @@
 "use client";
 
 import MediaModal from "@/components/application/Admin/MediaModal";
+import SelectedMediaPreview from "@/components/application/Admin/SelectedMediaPreview";
 import BreadCrumb from "@/components/application/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,7 +75,12 @@ const AddProduct = ({ initialData }: Props) => {
     const { data } = useFetch<CategoryResponse>("/api/category");
 
     const [open, setOpen] = useState(false);
-    const [selectedMedia, setSelectedMedia] = useState([]);
+    const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
+
+    const handleRemoveMedia = (mediaId: string) => {
+        setSelectedMedia(prev => prev.filter(id => id !== mediaId));
+        // Validation will be triggered by the useEffect with debounce
+    };
 
     useEffect(() => {
         if (data?.success) {
@@ -133,7 +139,6 @@ const AddProduct = ({ initialData }: Props) => {
         mrp: true,
         sellingPrice: true,
         discount: true,
-        media: true,
     });
 
 
@@ -146,8 +151,7 @@ const AddProduct = ({ initialData }: Props) => {
             category: [],
             mrp: 0,
             sellingPrice: 0,
-            discount: 0,
-            media: []
+            discount: 0
         }
     })
 
@@ -165,15 +169,31 @@ const AddProduct = ({ initialData }: Props) => {
         }
     }, [form.watch('name')]);
 
-    const onSubmit = async (values: ProductInput) => {
+
+    const onSubmit = async (values: any) => {
+        // Validate media selection before submission
+        if (selectedMedia.length === 0) {
+            showToast({ message: "Please select at least one image", type: "error" });
+            return;
+        }
+
         setLoading(true);
         try {
-            const { data: response } = await axios.post('/api/product/create', values);
+            // Include selected media in the form data
+            const formData = {
+                ...values,
+                media: selectedMedia
+            };
+
+            const { data: response } = await axios.post('/api/product/create', formData);
 
             if (!response.success) {
                 showToast({ message: response.message, type: "error" });
+                return;
             }
+            
             form.reset();
+            setSelectedMedia([]);
             showToast({ message: "Product added successfully", type: "success" });
 
         } catch (error) {
@@ -298,29 +318,37 @@ const AddProduct = ({ initialData }: Props) => {
                             {/* Row 4: Images */}
                             <div className="flex flex-col space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Product Images</label>
-                                {/* <Input
-                                    type="text"
-                                    placeholder="Select Product Image"
-                                    {...register("media")}
-                                    className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500"
-                                /> */}
-                                <MediaModal isMultiple={true} open={open} setOpen={setOpen} selectedMedia={selectedMedia} setSelectedMedia={setSelectedMedia} />
-
-
-
-                                <div className='cursor-pointer bg-gray-100 dark:bg-gray-800 p-3 rounded-md border w-[200px] mx-auto' onClick={() => setOpen(true)} >
-                                    <span>Select Media</span>
+                                <div className="relative cursor-pointer">
+                                    <Input
+                                        type="text"
+                                        placeholder={selectedMedia.length > 0 ? `${selectedMedia.length} image(s) selected` : "Select Product Images"}
+                                        value={selectedMedia.length > 0 ? `${selectedMedia.length} image(s) selected` : ""}
+                                        className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                                        readOnly
+                                        onClick={() => setOpen(true)}
+                                    />
+                                    <MediaModal isMultiple={true} open={open} setOpen={setOpen} selectedMedia={selectedMedia} setSelectedMedia={setSelectedMedia} />
                                 </div>
-                                {errors.media && <p className="text-red-500 text-sm">{errors.media.message}</p>}
+                                
+                                {/* Media Preview */}
+                                <SelectedMediaPreview 
+                                    selectedMediaIds={selectedMedia} 
+                                    onRemove={handleRemoveMedia}
+                                />
+                                
+                                {selectedMedia.length === 0 && (
+                                    <p className="text-red-500 text-sm">At least one media is required</p>
+                                )}
                             </div>
 
                             {/* Row 5: Buttons */}
                             <div className="flex space-x-4">
                                 <Button
-                                    type="button"
+                                    type="submit"
+                                    disabled={loading}
                                     className="cursor-pointer flex-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white shadow-md transition"
                                 >
-                                    {initialData ? "Update Product" : "Add Product"}
+                                    {loading ? "Adding..." : (initialData ? "Update Product" : "Add Product")}
                                 </Button>
                                 <Button
                                     type="reset"

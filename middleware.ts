@@ -1,3 +1,4 @@
+
 import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { WEBSITE_FORGOT_PASSWORD, WEBSITE_HOME, WEBSITE_LOGIN, WEBSITE_SIGNUP } from "./routes/WebsiteRoutes";
@@ -10,6 +11,9 @@ export async function middleware(request: NextRequest) {
         const pathname = request.nextUrl.pathname;
 
         const token = request.cookies.get("access_token");
+
+        console.log("Token" + token);
+
 
         // public routes
         if (!token && isPublicPath(pathname)) {

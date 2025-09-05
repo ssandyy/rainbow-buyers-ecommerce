@@ -69,7 +69,30 @@ export const generateOTP = () => {
 }
 
 
-export const isAuthenticated = async (role: string) => {
-    const auth = true;
-    return auth;
+export const isAuthenticated = async (requiredRole: string = 'user') => {
+    try {
+        const { cookies } = await import('next/headers');
+        const { jwtVerify } = await import('jose');
+        
+        const cookieStore = await cookies();
+        const token = cookieStore.get("access_token");
+
+        if (!token) {
+            return false;
+        }
+
+        // Verify JWT
+        const secret = new TextEncoder().encode(process.env.SECRET_KEY);
+        const { payload } = await jwtVerify(token.value, secret);
+
+        // Check role if specified
+        if (requiredRole && payload.role !== requiredRole && payload.role !== 'superadmin') {
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return false;
+    }
 }

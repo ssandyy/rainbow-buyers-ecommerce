@@ -16,10 +16,12 @@ export async function POST() {
             expires: new Date(0), // Expire immediately
         });
 
+
         return response;
+
     } catch (error) {
         return NextResponse.json(
-            { success: false, message: ` Something went wrong, ${error}` },
+            { success: false, message: ` Somethings went wrong, ${error}` },
             { status: 500 }
         );
     }

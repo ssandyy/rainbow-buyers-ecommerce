@@ -24,8 +24,8 @@ export async function POST(request: Request) {
             return response({
                 success: false,
                 statusCode: 400,
-                message: "Invalid data",
-                data: validatedData.error
+                data: validatedData.error,
+                message: `Invalid data ${validatedData.error}`,
             })
         }
 

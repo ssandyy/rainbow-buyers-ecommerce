@@ -13,9 +13,6 @@ const AdminSignout = () => {
     const router = useRouter()
 
     const handleSignout = async () => {
-
-
-
         try {
             const { data: logoutResponse } = await axios.post("/api/authentication/logout")
 

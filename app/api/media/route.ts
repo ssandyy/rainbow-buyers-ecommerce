@@ -7,6 +7,23 @@ export async function GET(req: NextRequest) {
     try {
         await connectToDatabase()
         const searchParams = req.nextUrl.searchParams
+        const ids = searchParams.get("ids")
+        
+        // If specific IDs are requested, fetch only those
+        if (ids) {
+            const idArray = ids.split(',').filter(id => id.trim())
+            const medias = await MediaModel.find({ 
+                _id: { $in: idArray },
+                deleted: null 
+            }).lean()
+            
+            return new Response(
+                JSON.stringify({ success: true, data: medias }),
+                { status: 200 }
+            )
+        }
+        
+        // Otherwise, use the existing pagination logic
         const includeDeleted = (searchParams.get("includeDeleted") || "false").toLowerCase() === "true"
         const q = (searchParams.get("q") || "").trim()
         const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1)

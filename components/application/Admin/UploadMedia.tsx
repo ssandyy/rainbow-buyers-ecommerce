@@ -1,7 +1,10 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import axios from "axios"
 import { CldUploadWidget } from "next-cloudinary"
+import { Upload } from "lucide-react"
 import { useState } from "react"
 import { showToast } from "@/lib/showToast"
 
@@ -29,6 +32,11 @@ const UploadMedia = ({ isMultiple = false }: UploadMediaProps) => {
             type: "error", 
             message: errorMessage
         })
+        setIsUploading(false)
+    }
+
+    const handleOnClose = () => {
+        // Reset uploading state when modal is closed/cancelled
         setIsUploading(false)
     }
 
@@ -107,6 +115,7 @@ const UploadMedia = ({ isMultiple = false }: UploadMediaProps) => {
                 onError={handleOnError}
                 onSuccess={handleOnSuccess}
                 onOpen={handleUploadStart}
+                onClose={handleOnClose}
                 options={{
                     multiple: isMultiple,
                     sources: ["local", "url", "camera"],
@@ -118,23 +127,21 @@ const UploadMedia = ({ isMultiple = false }: UploadMediaProps) => {
                 }}
             >
                 {({ open }) => (
-                    <div className="flex items-center gap-2">
-                        <input
-                            className="border px-2 py-1 rounded"
+                    <div className="flex items-center gap-3">
+                        <Input
                             placeholder="Folder (optional)"
                             value={folder}
                             onChange={(e) => setFolder(e.target.value)}
+                            className="w-48"
                         />
-                        <div
-                            className={`px-4 py-2 rounded-lg shadow cursor-pointer ${
-                                isUploading 
-                                    ? 'bg-gray-400 text-gray-200' 
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }`}
+                        <Button
                             onClick={() => !isUploading && open()}
+                            disabled={isUploading}
+                            className="flex items-center gap-2"
                         >
+                            <Upload className="w-4 h-4" />
                             {isUploading ? 'Uploading...' : 'Upload Image'}
-                        </div>
+                        </Button>
                     </div>
                 )}
             </CldUploadWidget>

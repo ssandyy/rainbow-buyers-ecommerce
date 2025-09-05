@@ -94,7 +94,7 @@ const LoginPage = () => {
             if (loginResponse.success) {
                 console.log(loginResponse);
                 showToast({ type: "success", message: loginResponse.message || "Login successfully" })
-                // dispatch(login(loginResponse.data))
+                dispatch(login(loginResponse.data))
                 router.push(WEBSITE_HOME)
                 return response({ success: true, statusCode: 200, message: loginResponse.message || "Login successfully", data: loginResponse.data });
             }
@@ -125,7 +125,12 @@ const LoginPage = () => {
             if (data.success) {
                 showToast({ type: "success", message: data.message || "OTP verified. Logging you in..." })
                 dispatch(login(data.data))
-                router.push(ADMIN_DASHBOARD)
+                // Redirect based on user role
+                if (data.data.role === "admin" || data.data.role === "superadmin") {
+                    router.push(ADMIN_DASHBOARD)
+                } else {
+                    router.push(WEBSITE_HOME)
+                }
             } else {
                 showToast({ type: "error", message: data.message || "Invalid or expired OTP" })
             }
