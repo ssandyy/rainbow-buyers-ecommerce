@@ -93,44 +93,6 @@ const AddProduct = ({ initialData }: Props) => {
         }
     }, [data]);
 
-
-
-
-
-    // useEffect(() => {
-    //     if (getCategory && getCategory.data.success) {
-    //         setCategoryOptions(
-    //             getCategory.data.data.map((cat: Category) => ({
-    //                 value: cat._id,
-    //                 label: cat.name,
-    //             }))
-    //         );
-    //     }
-    // }, [getCategory])
-
-
-    // const { data: getCategory } = useFetch<{
-    //     success: boolean;
-    //     statusCode: number;
-    //     message: string;
-    //     data: {
-    //         data: Category[];
-    //         meta: { totalRowCount: number };
-    //     };
-    // }>("/api/category");
-    // console.log(getCategory);
-    // const categoryOptions =
-    //     getCategory?.data?.data?.map((cat) => ({
-    //         value: cat._id,
-    //         label: cat.name,
-    //     })) || [];
-    // console.log(categoryOptions);
-
-
-
-
-
-
     const formSchema = productSchema.pick({
         name: true,
         slug: true,
@@ -140,7 +102,6 @@ const AddProduct = ({ initialData }: Props) => {
         sellingPrice: true,
         discount: true,
     });
-
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -160,15 +121,28 @@ const AddProduct = ({ initialData }: Props) => {
     const { errors } = formState;
 
     const name = watch("name");
+    const mrp = watch("mrp");
+    const discount = watch("discount");
+    const slug = watch("slug");
 
+    // Auto-generate slug when name changes
     useEffect(() => {
         const name = form.getValues("name");
-
         if (name) {
             setValue("slug", slugify(name, { lower: true, strict: true }));
         }
     }, [form.watch('name')]);
 
+    // Auto-calculate selling price when MRP or discount changes
+    useEffect(() => {
+        const mrpNum = Number(mrp);
+        const discountNum = Number(discount);
+
+        if (mrpNum > 0 && discountNum >= 0) {
+            const calculatedSellingPrice = mrpNum - (mrpNum * discountNum / 100);
+            setValue("sellingPrice", Math.round(calculatedSellingPrice * 100) / 100);
+        }
+    }, [mrp, discount, setValue]);
 
     const onSubmit = async (values: any) => {
         // Validate media selection before submission
@@ -205,7 +179,6 @@ const AddProduct = ({ initialData }: Props) => {
     }
     type Option = { value: string; label: string };
 
-
     return (
         <div>
             <BreadCrumb breadCrumbData={breadCrumbData} />
@@ -222,8 +195,8 @@ const AddProduct = ({ initialData }: Props) => {
                             onSubmit={handleSubmit(onSubmit)}
                             className="grid grid-cols-1 gap-6"
                         >
-                            {/* Row 1: Product Name, Slug, Category */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Row 1: Product Name and Category */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex flex-col space-y-2">
                                     <label className="text-sm font-medium text-gray-700">Product Name</label>
                                     <Input
@@ -231,20 +204,16 @@ const AddProduct = ({ initialData }: Props) => {
                                         {...register("name")}
                                         className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500"
                                     />
+                                    {/* Slug preview */}
+                                    {slug && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Slug: <span className="font-mono text-blue-600">{slug}</span>
+                                        </p>
+                                    )}
                                     {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                                 </div>
 
-                                <div className="flex flex-col space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Slug</label>
-                                    <Input
-                                        placeholder="auto-generated slug"
-                                        {...register("slug")}
-                                        className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500"
-                                    />
-                                    {errors.slug && <p className="text-red-500 text-sm">{errors.slug.message}</p>}
-                                </div>
-
-                                <div className="flex flex-col space-y-2  rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500">
+                                <div className="flex flex-col space-y-2 rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500">
                                     <label className="text-sm font-medium text-gray-700">Category</label>
                                     <Controller
                                         name="category"
@@ -267,10 +236,10 @@ const AddProduct = ({ initialData }: Props) => {
                                 </div>
                             </div>
 
-                            {/* Row 2: MRP, Selling Price, Discount */}
+                            {/* Row 2: MRP, Discount, Selling Price */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="flex flex-col space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">MRP</label>
+                                    <label className="text-sm font-medium text-gray-700">MRP (₹)</label>
                                     <Input
                                         type="number"
                                         placeholder="Enter MRP"
@@ -281,25 +250,31 @@ const AddProduct = ({ initialData }: Props) => {
                                 </div>
 
                                 <div className="flex flex-col space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Selling Price</label>
-                                    <Input
-                                        type="number"
-                                        placeholder="Enter selling price"
-                                        {...register("sellingPrice")}
-                                        className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500"
-                                    />
-                                    {errors.sellingPrice && <p className="text-red-500 text-sm">{errors.sellingPrice.message}</p>}
-                                </div>
-
-                                <div className="flex flex-col space-y-2">
                                     <label className="text-sm font-medium text-gray-700">Discount (%)</label>
                                     <Input
                                         type="number"
                                         placeholder="Enter discount"
+                                        min="0"
+                                        max="100"
                                         {...register("discount")}
                                         className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500"
                                     />
                                     {errors.discount && <p className="text-red-500 text-sm">{errors.discount.message}</p>}
+                                </div>
+
+                                <div className="flex flex-col space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">Selling Price (₹)</label>
+                                    <Input
+                                        type="number"
+                                        placeholder="Auto-calculated"
+                                        {...register("sellingPrice")}
+                                        className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 bg-gray-50"
+                                        readOnly
+                                    />
+                                    <p className="text-xs text-gray-500">
+                                        Auto-calculated based on MRP and discount
+                                    </p>
+                                    {errors.sellingPrice && <p className="text-red-500 text-sm">{errors.sellingPrice.message}</p>}
                                 </div>
                             </div>
 
@@ -308,11 +283,9 @@ const AddProduct = ({ initialData }: Props) => {
                                 <label className="text-sm font-medium text-gray-700">Product Description</label>
                                 <textarea
                                     placeholder="Write product description..."
-
                                     {...register("description")}
                                     className="rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 min-h-[100px] p-3"
                                 />
-
                                 {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
                             </div>
 
@@ -363,8 +336,6 @@ const AddProduct = ({ initialData }: Props) => {
                     </Form>
                 </CardContent>
             </Card>
-
-
         </div >
     );
 };

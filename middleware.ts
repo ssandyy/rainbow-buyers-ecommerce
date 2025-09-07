@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
             // If access token is expired, check if we have a valid refresh token
             if (jwtError.code === 'ERR_JWT_EXPIRED') {
                 const refreshToken = request.cookies.get("refresh_token");
-                
+
                 if (refreshToken) {
                     try {
                         // Verify refresh token
@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
                             refreshToken.value,
                             new TextEncoder().encode(process.env.SECRET_KEY)
                         );
-                        
+
                         // If refresh token is valid, allow the request to proceed
                         // The client-side will handle token refresh
                         return NextResponse.next();
@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
         const current_user_role = String(payload.role || "user");
 
 
-        if (isPublicPath(pathname)) {
+        if (isPublicPath(pathname) && token) {
             return NextResponse.redirect(new URL(WEBSITE_HOME, request.url));
         }
 
@@ -115,8 +115,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        "/admin/:path*", 
-        "/my-account/:path*", 
+        "/admin/:path*",
+        "/my-account/:path*",
         "/auth/:path*"
     ],
 };
