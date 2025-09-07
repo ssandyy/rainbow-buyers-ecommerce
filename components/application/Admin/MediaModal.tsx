@@ -8,8 +8,8 @@ import {
 } from '@/components/ui/dialog'
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import { useEffect, useState } from 'react'
 import MediaGallery from './MediaGallery'
-import { useState, useEffect } from 'react'
 
 const MediaModal = ({ open, setOpen, selectedMedia, setSelectedMedia, isMultiple }: any) => {
     const [localSelectedMedia, setLocalSelectedMedia] = useState<string[]>([])
@@ -39,16 +39,18 @@ const MediaModal = ({ open, setOpen, selectedMedia, setSelectedMedia, isMultiple
         return response
     }
 
-    const { pending, isError } = useInfiniteQuery({
+    const { isPending, isError } = useInfiniteQuery({
         queryKey: ['MediaModal'],
-        queryFn: async ({ pageParam }: { pageParam: number }) => await fetchMedia(pageParam),
+        queryFn: async ({ pageParam }: { pageParam: number }) =>
+            await fetchMedia({ page: pageParam }),
         initialPageParam: 0,
-        placeHolderData: keepPreviousData,
+        placeholderData: keepPreviousData,
         getNextPageParam: (lastPage, pages) => {
             const nextPage = pages.length
             return lastPage.hasMore ? nextPage : undefined
         }
     })
+
 
 
 
@@ -69,7 +71,7 @@ const MediaModal = ({ open, setOpen, selectedMedia, setSelectedMedia, isMultiple
 
                     {/* Middle area with MediaGallery */}
                     <div className="flex-1 overflow-hidden p-6 pt-4">
-                        <MediaGallery 
+                        <MediaGallery
                             selectedMedia={localSelectedMedia}
                             setSelectedMedia={setLocalSelectedMedia}
                             isMultiple={isMultiple}
@@ -78,12 +80,12 @@ const MediaModal = ({ open, setOpen, selectedMedia, setSelectedMedia, isMultiple
                     </div>
 
                     {/* Footer area */}
-                    <div className="p-6 pt-0 border-t flex justify-between">
-                        <div className="flex space-x-2">
+                    <div className="p-6 pt-2 border-t flex justify-between">
+                        {/* <div className="flex space-x-2">
                             <Button type="button" variant="outline" onClick={handleClearAll}>
                                 Clear All
                             </Button>
-                        </div>
+                        </div> */}
                         <div className="flex space-x-2">
                             <Button type="button" variant="outline" onClick={handleClose}>
                                 Cancel

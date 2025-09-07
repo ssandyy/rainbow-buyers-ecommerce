@@ -16,6 +16,7 @@ interface Props<T extends object> {
     deletetype?: string;
     trashview?: boolean;
     createAction?: React.ReactNode;
+    topActions?: (args: { selectedRows: T[]; clearSelection: () => void; refetch: () => void }) => React.ReactNode;
 }
 
 const DataTableWrapper = <T extends object>({
@@ -25,6 +26,7 @@ const DataTableWrapper = <T extends object>({
     initialPageSize = 10,
     createAction,
     trashview,
+    topActions,
 }: Props<T>) => {
     const { resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -51,6 +53,7 @@ const DataTableWrapper = <T extends object>({
                 collumnConfig={collumnConfig}
                 initialPageSize={initialPageSize}
                 createAction={createAction}
+                topActions={topActions}
             />
         </ThemeProvider>
     );

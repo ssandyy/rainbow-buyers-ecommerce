@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema(
         mrp: { type: Number, required: true, },
         sellingPrice: { type: Number, required: true },
         discount: { type: Number, required: true },
-        media: [{ type: mongoose.Schema.Types.ObjectId, ref: "Media", default: null, required: true }],
+        media: [{ type: mongoose.Schema.Types.ObjectId, ref: "Media", default: null, required: false }],
         deleted_At: { type: Date, default: null, index: true },
     },
     { timestamps: true }
