@@ -3,6 +3,7 @@
 import { logout } from "@/store/reducer/authReducer";
 import { WEBSITE_LOGIN } from "@/routes/WebsiteRoutes";
 import { isTokenExpired } from "@/lib/jwtUtils";
+import { setupTokenRefresh, clearTokenRefresh } from "@/lib/tokenRefresh";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -24,6 +25,7 @@ export const useAuth = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isValidating, setIsValidating] = useState(false);
     const hasValidated = useRef(false);
+    const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const validateAuth = useCallback(async () => {
         if (isValidating) return;
@@ -44,10 +46,28 @@ export const useAuth = () => {
             
             // Check if token is expired client-side
             if (isTokenExpired(token)) {
-                // Clear the expired token cookie
+                // Try to refresh the token
+                try {
+                    const refreshResponse = await axios.post("/api/authentication/refresh");
+                    
+                    if (refreshResponse.data.success) {
+                        // Token refreshed successfully, update Redux state
+                        dispatch({ type: "authStore/login", payload: refreshResponse.data.data });
+                        return true;
+                    } else {
+                        // Refresh failed, clear auth state and cookies
+                        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                        dispatch(logout());
+                        return false;
+                    }
+                } catch (refreshError) {
+                    // Refresh failed, clear auth state and cookies
                 document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                 dispatch(logout());
                 return false;
+                }
             }
             
             const response = await axios.get("/api/authentication/me");
@@ -59,6 +79,7 @@ export const useAuth = () => {
             } else {
                 // Token is invalid, clear auth state and cookie
                 document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                 dispatch(logout());
                 return false;
             }
@@ -67,8 +88,9 @@ export const useAuth = () => {
             
             // If it's a 401 error, the token is invalid/expired
             if (error.response?.status === 401) {
-                // Clear the invalid token cookie
+                // Clear the invalid token cookies
                 document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                 dispatch(logout());
                 return false;
             }
@@ -87,12 +109,43 @@ export const useAuth = () => {
         } catch (error) {
             console.error("Logout API error:", error);
         } finally {
-            // Clear the token cookie
+            // Clear both token cookies
             document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             dispatch(logout());
             router.push(WEBSITE_LOGIN);
         }
     };
+
+    // Setup automatic token refresh when user is authenticated
+    useEffect(() => {
+        if (auth && !refreshIntervalRef.current) {
+            refreshIntervalRef.current = setupTokenRefresh();
+            
+            // Listen for token refresh events
+            const handleTokenRefresh = (event: CustomEvent) => {
+                dispatch({ type: "authStore/login", payload: event.detail });
+            };
+            
+            window.addEventListener('tokenRefreshed', handleTokenRefresh as EventListener);
+            
+            return () => {
+                window.removeEventListener('tokenRefreshed', handleTokenRefresh as EventListener);
+            };
+        } else if (!auth && refreshIntervalRef.current) {
+            clearTokenRefresh(refreshIntervalRef.current);
+            refreshIntervalRef.current = null;
+        }
+    }, [auth, dispatch]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (refreshIntervalRef.current) {
+                clearTokenRefresh(refreshIntervalRef.current);
+            }
+        };
+    }, []);
 
     // Don't run automatic validation on mount - let components handle it manually
     useEffect(() => {

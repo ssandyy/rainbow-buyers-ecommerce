@@ -65,22 +65,37 @@ export async function POST(request: Request) {
             avatar: user.avatar,
         };
 
-        // Sign JWT
+        // Sign JWT with longer expiration (24 hours)
         const secret = new TextEncoder().encode(process.env.SECRET_KEY);
         const token = await new SignJWT(loggedInUserData)
             .setIssuedAt()
             .setProtectedHeader({ alg: "HS256" })
-            .setExpirationTime("1h")
+            .setExpirationTime("24h")
             .sign(secret);
 
-        // Set cookie
+        // Create refresh token (7 days)
+        const refreshToken = await new SignJWT({ userId: user._id.toString() })
+            .setIssuedAt()
+            .setProtectedHeader({ alg: "HS256" })
+            .setExpirationTime("7d")
+            .sign(secret);
+
+        // Set cookies
         const cookieStore = await cookies();
         cookieStore.set("access_token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/",
-            maxAge: 60 * 60 * 24, // 1 day
+            maxAge: 60 * 60 * 24, // 24 hours
+        });
+        
+        cookieStore.set("refresh_token", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 
         // Cleanup OTP

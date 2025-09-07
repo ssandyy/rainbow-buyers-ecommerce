@@ -16,6 +16,14 @@ export async function POST() {
             expires: new Date(0), // Expire immediately
         });
 
+        response.cookies.set({
+            name: "refresh_token",
+            value: "",
+            httpOnly: true,
+            path: "/",
+            expires: new Date(0), // Expire immediately
+        });
+
 
         return response;
 

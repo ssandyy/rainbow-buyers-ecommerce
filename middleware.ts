@@ -1,10 +1,10 @@
 
 import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
-import { WEBSITE_FORGOT_PASSWORD, WEBSITE_HOME, WEBSITE_LOGIN, WEBSITE_SIGNUP } from "./routes/WebsiteRoutes";
+import { WEBSITE_FORGOT_PASSWORD, WEBSITE_HOME, WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_VERIFY_OTP } from "./routes/WebsiteRoutes";
 
 export async function middleware(request: NextRequest) {
-    const publicPaths = [WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_FORGOT_PASSWORD, "/auth/verify-otp", "/auth/verify-email"];
+    const publicPaths = [WEBSITE_LOGIN, WEBSITE_SIGNUP, WEBSITE_VERIFY_OTP, WEBSITE_FORGOT_PASSWORD, "/auth/verify-email"];
     try {
 
         const isPublicPath = (path: string) => publicPaths.some((p) => path === p || path.startsWith(p + "/"));
@@ -26,10 +26,50 @@ export async function middleware(request: NextRequest) {
         }
 
         //Verify JWT
-        const { payload } = await jwtVerify(
-            token.value,
-            new TextEncoder().encode(process.env.SECRET_KEY)
-        );
+        let payload;
+        try {
+            const result = await jwtVerify(
+                token.value,
+                new TextEncoder().encode(process.env.SECRET_KEY)
+            );
+            payload = result.payload;
+        } catch (jwtError: any) {
+            // If access token is expired, check if we have a valid refresh token
+            if (jwtError.code === 'ERR_JWT_EXPIRED') {
+                const refreshToken = request.cookies.get("refresh_token");
+                
+                if (refreshToken) {
+                    try {
+                        // Verify refresh token
+                        const { payload: refreshPayload } = await jwtVerify(
+                            refreshToken.value,
+                            new TextEncoder().encode(process.env.SECRET_KEY)
+                        );
+                        
+                        // If refresh token is valid, allow the request to proceed
+                        // The client-side will handle token refresh
+                        return NextResponse.next();
+                    } catch (refreshError) {
+                        // Refresh token is also invalid, clear cookies and redirect to login
+                        const response = NextResponse.redirect(new URL(WEBSITE_LOGIN, request.url));
+                        response.cookies.set("access_token", "", { httpOnly: true, path: "/", expires: new Date(0) });
+                        response.cookies.set("refresh_token", "", { httpOnly: true, path: "/", expires: new Date(0) });
+                        return response;
+                    }
+                } else {
+                    // No refresh token, redirect to login
+                    const response = NextResponse.redirect(new URL(WEBSITE_LOGIN, request.url));
+                    response.cookies.set("access_token", "", { httpOnly: true, path: "/", expires: new Date(0) });
+                    return response;
+                }
+            } else {
+                // Other JWT errors, redirect to login
+                const response = NextResponse.redirect(new URL(WEBSITE_LOGIN, request.url));
+                response.cookies.set("access_token", "", { httpOnly: true, path: "/", expires: new Date(0) });
+                response.cookies.set("refresh_token", "", { httpOnly: true, path: "/", expires: new Date(0) });
+                return response;
+            }
+        }
 
         const current_user_role = String(payload.role || "user");
 
@@ -74,5 +114,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/admin/:path*", "/my-account/:path*", "/auth/:path*"],
+    matcher: [
+        "/admin/:path*", 
+        "/my-account/:path*", 
+        "/auth/:path*"
+    ],
 };

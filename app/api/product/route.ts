@@ -1,6 +1,7 @@
 import { isAuthenticated, response } from "@/lib/apiHelperFunctions";
 import connectToDatabase from "@/lib/dbconnection";
 import ProductModel from "@/models/Product.model";
+import MediaModel from "@/models/Media.model";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {

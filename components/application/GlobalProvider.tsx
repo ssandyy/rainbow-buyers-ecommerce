@@ -6,6 +6,8 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Loading from './Loading'
 import AuthProvider from './AuthProvider'
+import TokenExpirationWarning from './TokenExpirationWarning'
+import { useAuth } from '@/hooks/useAuth'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -17,12 +19,26 @@ const queryClient = new QueryClient({
     },
 })
 
+const GlobalProviderContent = ({ children }: any) => {
+    const { logout } = useAuth()
+    
+    return (
+        <>
+            <AuthProvider />
+            <TokenExpirationWarning onLogout={logout} />
+            {children}
+        </>
+    )
+}
+
 const GlobalProvider = ({ children }: any) => {
     return (
         <Provider store={store}>
             <PersistGate loading={<Loading />} persistor={persistor} >
                 <QueryClientProvider client={queryClient}>
-                    {children}
+                    <GlobalProviderContent>
+                        {children}
+                    </GlobalProviderContent>
                 </QueryClientProvider>
             </PersistGate>
         </Provider>

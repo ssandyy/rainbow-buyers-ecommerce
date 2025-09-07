@@ -26,8 +26,9 @@ const Navbar = () => {
         try {
             await axios.post("/api/authentication/logout")
         } catch { }
-        // Clear the token cookie
+        // Clear both token cookies
         document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
         dispatch(logout())
         router.push(WEBSITE_LOGIN)
     }
